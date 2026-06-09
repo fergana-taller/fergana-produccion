@@ -1653,7 +1653,13 @@
   let ganttData = [];
 
   async function cargarGantt(){
-    // Intentar leer de Supabase si está disponible
+    // Esperar hasta que sb esté disponible (máx 3 segundos)
+    let intentos = 0;
+    while(!window.sb && intentos < 30){
+      await new Promise(r=>setTimeout(r,100));
+      intentos++;
+    }
+
     if(window.sb){
       const {data,error} = await window.sb.from('proyectos')
         .select('nombre,cliente,codigo,descripcion,categoria,estado,fecha_entrada,semanas_min,semanas_max,fecha_entrega,nota_estado')
@@ -1664,7 +1670,7 @@
         return;
       }
     }
-    buildGantt(); // fallback vacío
+    buildGantt();
   }
 
   function buildGantt(){
