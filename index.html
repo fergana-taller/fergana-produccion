@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -2084,7 +2084,7 @@ window.cerrarSesion = async function() {
   currentPersona = null;
   document.getElementById('app-screen').style.display = 'none';
   document.getElementById('login-screen').style.display = 'flex';
-  document.getElementById('login-email').value = '';
+  document.getElementById('login-username').value = '';
   document.getElementById('login-pass').value = '';
 };
 
@@ -2116,28 +2116,84 @@ async function cargarProyectosDB() {
 
   if (error || !data) return;
 
-  const tbody = document.getElementById('proyectos-tbody');
-  if (!tbody) return;
-
   const catLabel = {resurtido:'Resurtido', proyecto:'Proyecto', pedido_especial:'Pedido especial', ensamble:'Ensamble', prototipo:'Prototipo'};
   const catCss   = {resurtido:'cat-resurtido', proyecto:'cat-proyecto', pedido_especial:'cat-pedido', ensamble:'cat-ensamble', prototipo:'cat-prototipo'};
   const estLabel = {en_produccion:'En producción', en_espera:'En espera', retraso:'Retraso', listo:'Listo', pausa:'En pausa', entregado:'Entregado'};
   const estBadge = {en_produccion:'badge-prog', en_espera:'badge-esp', retraso:'badge-ret', listo:'badge-listo', pausa:'badge-pausa', entregado:'badge-listo'};
+  const areaLabel= {carpinteria:'Carpintería', pulido:'Pulido', terminados:'Terminados', empaque:'Empaque', entregado:'Entregado'};
 
-  tbody.innerHTML = data.map(p => {
-    const equipo = (p.asignaciones||[]).map(a =>
-      `<div class="avatar" style="background:#F0E6DC;color:#8B5E3C;width:24px;height:24px;font-size:10px;">${(a.personas?.nombre||'?').substring(0,2).toUpperCase()}</div>`
-    ).join('');
-    const entrega = p.fecha_entrega ? new Date(p.fecha_entrega).toLocaleDateString('es-MX',{day:'numeric',month:'short'}) : '—';
-    return `<tr data-cat="${p.categoria}" data-estado="${p.estado}">
-      <td><div style="font-weight:600;font-size:12.5px;">${p.nombre}</div><div class="mono">${p.codigo||''} ${p.descripcion||''}</div></td>
-      <td><span class="cat-badge ${catCss[p.categoria]||''}">${catLabel[p.categoria]||p.categoria}</span></td>
-      <td><span class="area-pill area-active">${p.area_actual||'—'}</span></td>
-      <td><div class="avatar-group">${equipo||'<span style="font-size:11px;color:var(--text-tertiary);">—</span>'}</div></td>
-      <td><span class="badge ${estBadge[p.estado]||'badge-esp'}">${p.nota_estado||estLabel[p.estado]||p.estado}</span></td>
-      <td><span class="days-ok">${entrega}</span></td>
-    </tr>`;
-  }).join('');
+  // ── Actualizar tabla de proyectos ──
+  const tbody = document.getElementById('proyectos-tbody');
+  if (tbody) {
+    tbody.innerHTML = data.map(p => {
+      const equipo = (p.asignaciones||[]).map(a =>
+        `<div class="avatar" style="background:#F0E6DC;color:#8B5E3C;width:24px;height:24px;font-size:10px;">${(a.personas?.nombre||'?').substring(0,2).toUpperCase()}</div>`
+      ).join('');
+      const entrega = p.fecha_entrega ? new Date(p.fecha_entrega+'T12:00:00').toLocaleDateString('es-MX',{day:'numeric',month:'short'}) : '—';
+      return `<tr data-cat="${p.categoria}" data-estado="${p.estado}">
+        <td><div style="font-weight:600;font-size:12.5px;">${p.nombre}${p.cliente?' — '+p.cliente:''}</div><div class="mono">${p.codigo||''} ${p.descripcion||''}</div></td>
+        <td><span class="cat-badge ${catCss[p.categoria]||''}">${catLabel[p.categoria]||p.categoria}</span></td>
+        <td><span class="area-pill area-active">${areaLabel[p.area_actual]||p.area_actual||'—'}</span></td>
+        <td><div class="avatar-group">${equipo||'<span style="font-size:11px;color:var(--text-tertiary);">—</span>'}</div></td>
+        <td><span class="badge ${estBadge[p.estado]||'badge-esp'}">${p.nota_estado||estLabel[p.estado]||p.estado}</span></td>
+        <td><span class="days-ok">${entrega}</span></td>
+      </tr>`;
+    }).join('');
+  }
+
+  // ── Actualizar dashboard ──
+  const total     = data.length;
+  const enProd    = data.filter(p=>p.estado==='en_produccion').length;
+  const retraso   = data.filter(p=>p.estado==='retraso').length;
+  const enEspera  = data.filter(p=>['en_espera','pausa'].includes(p.estado)).length;
+  const salenHoy  = data.filter(p=>{
+    if(!p.fecha_entrega) return false;
+    const hoy = new Date().toISOString().split('T')[0];
+    return p.fecha_entrega === hoy && p.estado !== 'entregado';
+  }).length;
+
+  // Actualizar stat cards del dashboard
+  const stats = document.querySelectorAll('#view-dashboard .stat-value');
+  if(stats[0]) stats[0].textContent = total;
+  if(stats[1]) stats[1].textContent = enProd;
+  if(stats[2]) stats[2].textContent = retraso;
+  if(stats[3]) stats[3].textContent = enEspera;
+  if(stats[4]) stats[4].textContent = salenHoy;
+
+  // ── Actualizar tabla del dashboard ──
+  const dashTbody = document.querySelector('#view-dashboard tbody');
+  if (dashTbody) {
+    const activos = data.filter(p=>p.estado !== 'entregado').slice(0, 13);
+    dashTbody.innerHTML = activos.map(p => {
+      const equipo = (p.asignaciones||[]).map(a =>
+        `<div class="avatar" style="background:#F0E6DC;color:#8B5E3C;width:24px;height:24px;font-size:10px;">${(a.personas?.nombre||'?').substring(0,2).toUpperCase()}</div>`
+      ).join('');
+      const entrega = p.fecha_entrega ? new Date(p.fecha_entrega+'T12:00:00').toLocaleDateString('es-MX',{day:'numeric',month:'short'}) : '—';
+      const esHoy   = p.fecha_entrega === new Date().toISOString().split('T')[0];
+      const esPasado= p.fecha_entrega && p.fecha_entrega < new Date().toISOString().split('T')[0] && p.estado !== 'entregado';
+      const fechaEl = esHoy
+        ? `<span class="tomorrow">Hoy</span>`
+        : esPasado
+        ? `<span class="urgent">${entrega} ⚠</span>`
+        : `<span class="days-ok">${entrega}</span>`;
+      return `<tr>
+        <td><div style="font-weight:600;font-size:12.5px;">${p.nombre}${p.cliente?' — '+p.cliente:''}</div><div class="mono">${p.codigo||''} ${p.descripcion||''}</div></td>
+        <td><span class="area-pill area-active">${areaLabel[p.area_actual]||p.area_actual||'—'}</span></td>
+        <td><div class="avatar-group">${equipo||'<span style="font-size:11px;color:var(--text-tertiary);">—</span>'}</div></td>
+        <td><span class="badge ${estBadge[p.estado]||'badge-esp'}">${p.nota_estado||estLabel[p.estado]||p.estado}</span></td>
+        <td>${fechaEl}</td>
+      </tr>`;
+    }).join('');
+  }
+
+  // ── Actualizar select de proyectos en requisiciones ──
+  const selProy = document.getElementById('req-proyecto');
+  if (selProy) {
+    selProy.innerHTML = '<option value="">Seleccionar proyecto...</option>' +
+      data.filter(p=>p.estado!=='entregado').map(p =>
+        `<option value="${p.id}">${p.nombre}${p.cliente?' — '+p.cliente:''}</option>`
+      ).join('');
+  }
 }
 
 // ═══════════════════════════════════════════════
