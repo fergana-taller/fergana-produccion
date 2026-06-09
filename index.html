@@ -1605,53 +1605,8 @@
 <script>
 (function(){
   const TODAY = new Date(); TODAY.setHours(0,0,0,0);
-  const ORIGIN = new Date('2025-12-29');
-  const TOTAL_WEEKS = 36;
   const WEEK_MS = 7*24*3600*1000;
-  function weeksFrom(d){ return (d-ORIGIN)/WEEK_MS; }
-  function todayPct(){ return Math.min(100,Math.max(0,weeksFrom(TODAY)/TOTAL_WEEKS*100)); }
-  function weekLabel(w){ const d=new Date(ORIGIN.getTime()+w*WEEK_MS); return (d.getMonth()+1)+'/'+(d.getDate()); }
 
-  const STATUS_COLOR={prog:'#B8916A',ret:'#E24B4A',listo:'#639922',esp:'#A8A49E',pausa:'#A8A49E'};
-  const CAT_LABELS={r:'Resurtido',p:'Proyecto',pe:'Pedido especial',e:'Ensamble',pr:'Prototipo'};
-  const CAT_CSS={r:'cat-resurtido',p:'cat-proyecto',pe:'cat-pedido',e:'cat-ensamble',pr:'cat-prototipo'};
-
-  const projects=[
-    {section:'Resurtido NAMUH'},
-    {name:'Sillas Diez (4 pzas)',sub:'006583+006987',cat:'r',start:'2026-01-14',weeks:[8,8],status:'ret',note:'Espera tapicería'},
-    {section:'Proyecto Senderos'},
-    {name:'Shutters casita',sub:'4 pzas · falta muestra tono',cat:'p',start:'2026-01-06',weeks:[8,8],status:'ret',note:'Falta muestra'},
-    {name:'Puertas interiores',sub:'6 pzas · Roberto + Mario',cat:'p',start:null,weeks:null,status:'prog'},
-    {name:'Puertas exteriores',sub:'Listas para instalar',cat:'p',start:null,weeks:null,status:'listo'},
-    {name:'Ventana',sub:'Eduardo',cat:'p',start:'2026-06-08',weeks:[1,1],status:'prog'},
-    {name:'Duela borneo terraza',sub:'Leonardo · esta semana',cat:'p',start:'2026-06-08',weeks:[1,1],status:'prog'},
-    {section:'Pedidos especiales'},
-    {name:'Mesa mármol — A. Vázquez',sub:'PY-006223',cat:'pe',start:'2026-04-27',weeks:[6,6],status:'prog'},
-    {name:'Gabinete TV — K. Tavarez',sub:'007003 · espera Funart',cat:'pe',start:'2026-03-12',weeks:[10,12],status:'ret',note:'Espera herrajes'},
-    {name:'Mesa centro — M. Cortina',sub:'007006 · entregado',cat:'pe',start:'2026-04-30',weeks:[4,6],status:'listo'},
-    {name:'Bufetera Lao — M. Cepeda',sub:'007008',cat:'pe',start:'2026-06-08',weeks:[6,8],status:'esp'},
-    {section:'Proyecto Ivette Beltrán'},
-    {name:'Pedestal',sub:'38×38×110 · empaque hoy',cat:'p',start:'2026-05-08',weeks:[4,6],status:'listo'},
-    {name:'Cajonera',sub:'150×62×78 · entra terminados',cat:'p',start:'2026-05-08',weeks:[6,8],status:'prog'},
-    {name:'Trinche',sub:'350×80×90 · en pulido',cat:'p',start:'2026-05-08',weeks:[6,8],status:'prog'},
-    {name:'Librero / TV',sub:'430×55×250 · en pausa',cat:'p',start:'2026-05-08',weeks:[8,10],status:'pausa'},
-    {section:'Proyecto E. Carrasco'},
-    {name:'Burós (4 pzas)',sub:'75×55×76 · espera material',cat:'p',start:'2026-06-01',weeks:[4,6],status:'esp'},
-    {section:'Otros NAMUH'},
-    {name:'Vitrina B — Casa Palacio',sub:'Espera orden de producción',cat:'r',start:null,weeks:[1,1],status:'esp'},
-    {section:'Prototipos'},
-    {name:'Lámpara Sama',sub:'Falta barniz · Luis Ángel',cat:'pr',start:null,weeks:null,status:'prog'},
-    {section:'Ensambles'},
-    {name:'Mesas chuletas (par)',sub:'Diseño pendiente',cat:'e',start:null,weeks:[4,6],status:'esp'},
-    {name:'Mesas chuletas nuevos diseños',sub:'Diseño pendiente',cat:'e',start:null,weeks:[4,6],status:'esp'},
-    {name:'Cantina',sub:'Sin fecha de entrada',cat:'e',start:null,weeks:[4,6],status:'esp'},
-    {name:'Barra Siddharta',sub:'Sin fecha de entrada',cat:'e',start:null,weeks:[4,6],status:'esp'},
-    {name:'Consola',sub:'Sin fecha de entrada',cat:'e',start:null,weeks:[4,6],status:'esp'},
-  ];
-
-  function statusLabel(s,note){ const m={prog:'En curso',ret:'Retraso',listo:'Listo',esp:'En espera',pausa:'En pausa'}; return note||m[s]||s; }
-
-  // Meses visibles: ene 2026 – ago 2026 (8 meses)
   const MONTHS = [
     {label:'Ene',start:new Date('2026-01-01'),end:new Date('2026-02-01')},
     {label:'Feb',start:new Date('2026-02-01'),end:new Date('2026-03-01')},
@@ -1667,153 +1622,173 @@
   const RANGE_MS    = RANGE_END - RANGE_START;
 
   function datePct(d){ return Math.min(100,Math.max(0,(d-RANGE_START)/RANGE_MS*100)); }
-  function todayPctNew(){ return datePct(TODAY); }
-
-  // Estado de expansión por mes
   const expandedMonths = {};
 
   function weeksOfMonth(mo){
-    const weeks=[];
-    let cur=new Date(mo.start);
-    while(cur < mo.end){
-      const wEnd=new Date(Math.min(new Date(cur.getTime()+WEEK_MS), mo.end));
-      weeks.push({start:new Date(cur), end:wEnd});
-      cur=wEnd;
-    }
+    const weeks=[]; let cur=new Date(mo.start);
+    while(cur<mo.end){ const wEnd=new Date(Math.min(new Date(cur.getTime()+WEEK_MS),mo.end)); weeks.push({start:new Date(cur),end:wEnd}); cur=wEnd; }
     return weeks;
   }
 
-  function buildGantt(){
-    const tp=todayPctNew();
+  function fmtDate(d){ if(!d) return '—'; const dd=new Date(d+'T12:00:00'); return dd.getDate()+'/'+(dd.getMonth()+1)+'/'+dd.getFullYear(); }
+  function diffDays(a,b){ return Math.round((b-a)/(1000*60*60*24)); }
 
-    let html='<table style="width:100%;border-collapse:collapse;font-size:12px;table-layout:fixed;">';
-    html+='<colgroup><col style="width:175px"><col style="width:75px"><col><col style="width:90px"></colgroup>';
+  // Tooltip global
+  const tip = document.createElement('div');
+  tip.style.cssText='position:fixed;z-index:9999;background:#1A1814;color:#F7F5F0;font-size:11px;padding:10px 13px;border-radius:8px;pointer-events:none;display:none;max-width:240px;line-height:1.6;box-shadow:0 4px 16px rgba(0,0,0,.3);';
+  document.body.appendChild(tip);
 
-    // HEADER — fila de meses
-    html+='<thead>';
-    html+='<tr style="background:var(--bg);">';
-    html+='<th style="padding:6px 12px;text-align:left;font-size:10px;font-weight:600;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:.04em;border-bottom:1px solid var(--border-soft);">Proyecto</th>';
-    html+='<th style="padding:6px 8px;text-align:left;font-size:10px;font-weight:600;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:.04em;border-bottom:1px solid var(--border-soft);">Categoría</th>';
-    html+='<th style="padding:0;border-bottom:1px solid var(--border-soft);">';
-    html+='<div style="display:flex;position:relative;">';
-    MONTHS.forEach((mo,i)=>{
-      const isExp=expandedMonths[i];
-      const weeks=weeksOfMonth(mo);
-      const flex=isExp?weeks.length:1;
-      const isToday=TODAY>=mo.start&&TODAY<mo.end;
-      html+=`<div onclick="toggleMonth(${i})" style="flex:${flex};cursor:pointer;text-align:center;padding:5px 2px;font-size:10px;font-weight:600;border-right:1px solid var(--border-soft);color:${isToday?'#8B5E3C':'var(--text-secondary)'};background:${isToday?'#F0E6DC':'transparent'};user-select:none;white-space:nowrap;" title="Clic para ${isExp?'contraer':'expandir'} semanas">`;
-      if(isExp){
-        // mostrar semanas
-        html+=`<div style="display:flex;">`;
-        weeks.forEach((wk,wi)=>{
-          const d=wk.start;
-          const lbl=(d.getDate())+'/'+(d.getMonth()+1);
-          html+=`<div style="flex:1;text-align:center;font-size:9px;color:var(--text-tertiary);padding:2px 0;border-right:1px dashed var(--border-soft);">${lbl}</div>`;
-        });
-        html+=`</div>`;
-        html+=`<div style="font-size:9px;color:#8B5E3C;margin-top:1px;">${mo.label} ▴</div>`;
-      } else {
-        html+=`${mo.label}${isToday?' ●':''}`;
-      }
-      html+=`</div>`;
-    });
-    html+='</div></th>';
-    html+='<th style="padding:6px 8px;text-align:left;font-size:10px;font-weight:600;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:.04em;border-bottom:1px solid var(--border-soft);">Estado</th>';
-    html+='</tr></thead><tbody>';
+  document.addEventListener('mousemove', e=>{ tip.style.left=(e.clientX+14)+'px'; tip.style.top=(e.clientY-10)+'px'; });
 
-    projects.forEach(p=>{
-      if(p.section){
-        html+=`<tr><td colspan="4" style="padding:7px 12px;font-size:10px;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.05em;background:var(--bg);border-bottom:1px solid var(--border-soft);">${p.section}</td></tr>`;
-        return;
-      }
-      const color=STATUS_COLOR[p.status]||'#888';
-      const catCls=CAT_CSS[p.cat]||'';
-
-      // construir barra SVG sobre grid de meses/semanas
-      let barHTML='<div style="display:flex;position:relative;height:26px;">';
-      MONTHS.forEach((mo,i)=>{
-        const isExp=expandedMonths[i];
-        const weeks=weeksOfMonth(mo);
-        const flex=isExp?weeks.length:1;
-        barHTML+=`<div style="flex:${flex};position:relative;border-right:1px solid var(--border-soft);height:100%;">`;
-
-        // línea de hoy dentro de este mes
-        if(TODAY>=mo.start && TODAY<mo.end){
-          const withinPct=datePct(TODAY);
-          const moPct=(TODAY-mo.start)/(mo.end-mo.start)*100;
-          if(isExp){
-            // calcular en qué semana cae
-            weeks.forEach((wk,wi)=>{
-              if(TODAY>=wk.start && TODAY<wk.end){
-                const wPct=(TODAY-wk.start)/(wk.end-wk.start)*100;
-                barHTML+=`<div style="position:absolute;top:0;bottom:0;left:calc(${wi}/${weeks.length}*100% + ${wPct}/${weeks.length}%);width:1.5px;background:#E24B4A;z-index:10;"></div>`;
-              }
-            });
-          } else {
-            barHTML+=`<div style="position:absolute;top:0;bottom:0;left:${moPct}%;width:1.5px;background:#E24B4A;z-index:10;"></div>`;
-          }
-        }
-
-        if(p.start && p.weeks){
-          const startD=new Date(p.start);
-          const maxE=new Date(startD.getTime()+p.weeks[1]*WEEK_MS);
-          const minE=new Date(startD.getTime()+p.weeks[0]*WEEK_MS);
-          const isOver=p.status==='ret'||(TODAY>maxE);
-
-          // rango del mes actual
-          const mS=mo.start, mE=mo.end;
-          const barS=new Date(Math.max(startD,mS));
-          const barE=new Date(Math.min(maxE,mE));
-          const fillE=new Date(Math.min(TODAY,maxE,mE));
-          const fillS=new Date(Math.max(startD,mS));
-
-          if(barS<mE && barE>mS){
-            const mDur=mE-mS;
-            const rL=(barS-mS)/mDur*100;
-            const rW=(barE-barS)/mDur*100;
-            const fL=(fillS-mS)/mDur*100;
-            const fW=Math.max(0,(fillE-fillS)/mDur*100);
-            barHTML+=`<div style="position:absolute;top:6px;height:14px;left:${rL}%;width:${rW}%;border-radius:3px;background:${isOver?'#E24B4A':'#639922'};opacity:.3;"></div>`;
-            if(fW>0) barHTML+=`<div style="position:absolute;top:6px;height:14px;left:${fL}%;width:${fW}%;border-radius:3px;background:${isOver?'#E24B4A':'#B8916A'};"></div>`;
-          }
-        }
-        barHTML+='</div>';
-      });
-
-      if(!p.start || !p.weeks){
-        // sin fecha: texto sobre el grid
-        barHTML+=`<div style="position:absolute;top:6px;left:8px;font-size:10px;color:var(--text-tertiary);font-style:italic;pointer-events:none;">sin fecha definida</div>`;
-      }
-      barHTML+='</div>';
-
-      html+=`<tr style="border-bottom:1px solid var(--border-soft);" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''">
-        <td style="padding:6px 12px;">
-          <div style="font-weight:600;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${p.name}</div>
-          <div style="font-size:10px;color:var(--text-tertiary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${p.sub||''}</div>
-        </td>
-        <td style="padding:6px 8px;"><span class="cat-badge ${catCls}" style="font-size:9px;">${CAT_LABELS[p.cat]||''}</span></td>
-        <td style="padding:3px 0;">${barHTML}</td>
-        <td style="padding:6px 8px;font-size:10px;font-weight:500;color:${color};white-space:nowrap;">
-          <span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:${color};margin-right:4px;vertical-align:middle;"></span>${statusLabel(p.status,p.note)}
-        </td>
-      </tr>`;
-    });
-
-    html+='</tbody></table>';
-    const el=document.getElementById('gantt-root');
-    if(el) el.innerHTML=html;
+  function showTip(el, html){
+    el.addEventListener('mouseenter',()=>{ tip.innerHTML=html; tip.style.display='block'; });
+    el.addEventListener('mouseleave',()=>{ tip.style.display='none'; });
   }
 
-  window.toggleMonth = function(i){
-    expandedMonths[i] = !expandedMonths[i];
-    buildGantt();
-  };
+  const STATUS_COLOR={en_produccion:'#B8916A',retraso:'#E24B4A',listo:'#639922',en_espera:'#A8A49E',pausa:'#A8A49E',entregado:'#639922'};
+  const CAT_LABELS={resurtido:'Resurtido',proyecto:'Proyecto',pedido_especial:'Pedido especial',ensamble:'Ensamble',prototipo:'Prototipo'};
+  const CAT_CSS={resurtido:'cat-resurtido',proyecto:'cat-proyecto',pedido_especial:'cat-pedido',ensamble:'cat-ensamble',prototipo:'cat-prototipo'};
+  const EST_LABELS={en_produccion:'En curso',retraso:'Retraso',listo:'Listo',en_espera:'En espera',pausa:'En pausa',entregado:'Entregado'};
 
-  document.addEventListener('DOMContentLoaded', buildGantt);
-  const origShow=window.showView;
-  window.showView=function(id){ if(typeof origShow==='function') origShow(id); if(id==='cronograma') buildGantt(); };
+  let ganttData = [];
+
+  async function cargarGantt(){
+    // Intentar leer de Supabase si está disponible
+    if(window.sb){
+      const {data,error} = await window.sb.from('proyectos')
+        .select('nombre,cliente,codigo,descripcion,categoria,estado,fecha_entrada,semanas_min,semanas_max,fecha_entrega,nota_estado')
+        .order('fecha_entrada',{ascending:true});
+      if(!error && data && data.length){
+        ganttData = data;
+        buildGantt();
+        return;
+      }
+    }
+    buildGantt(); // fallback vacío
+  }
+
+  function buildGantt(){
+    const el = document.getElementById('gantt-root');
+    if(!el) return;
+
+    // Agrupar por categoría
+    const grupos = {
+      resurtido:[], proyecto:[], pedido_especial:[], ensamble:[], prototipo:[]
+    };
+    ganttData.forEach(p=>{ if(grupos[p.categoria]) grupos[p.categoria].push(p); });
+
+    let html = '<table style="width:100%;border-collapse:collapse;font-size:12px;table-layout:fixed;">';
+    html += '<colgroup><col style="width:175px"><col style="width:75px"><col><col style="width:90px"></colgroup>';
+
+    // Header meses
+    html += '<thead><tr style="background:var(--bg);">';
+    html += '<th style="padding:6px 12px;text-align:left;font-size:10px;font-weight:600;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:.04em;border-bottom:1px solid var(--border-soft);">Proyecto</th>';
+    html += '<th style="padding:6px 8px;text-align:left;font-size:10px;font-weight:600;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:.04em;border-bottom:1px solid var(--border-soft);">Categoría</th>';
+    html += '<th style="padding:0;border-bottom:1px solid var(--border-soft);"><div style="display:flex;">';
+    MONTHS.forEach((mo,i)=>{
+      const isExp=expandedMonths[i], weeks=weeksOfMonth(mo), flex=isExp?weeks.length:1;
+      const isToday=TODAY>=mo.start&&TODAY<mo.end;
+      html+=`<div onclick="toggleMonth(${i})" style="flex:${flex};cursor:pointer;text-align:center;padding:5px 2px;font-size:10px;font-weight:600;border-right:1px solid var(--border-soft);color:${isToday?'#8B5E3C':'var(--text-secondary)'};background:${isToday?'#F0E6DC':'transparent'};user-select:none;white-space:nowrap;">`;
+      if(isExp){
+        html+=`<div style="display:flex;">`;
+        weeks.forEach(wk=>{ const d=wk.start; html+=`<div style="flex:1;text-align:center;font-size:9px;color:var(--text-tertiary);padding:2px 0;border-right:1px dashed var(--border-soft);">${d.getDate()}/${d.getMonth()+1}</div>`; });
+        html+=`</div><div style="font-size:9px;color:#8B5E3C;">${mo.label} ▴</div>`;
+      } else { html+=`${mo.label}${isToday?' ●':''}`; }
+      html+=`</div>`;
+    });
+    html += '</div></th>';
+    html += '<th style="padding:6px 8px;text-align:left;font-size:10px;font-weight:600;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:.04em;border-bottom:1px solid var(--border-soft);">Estado</th>';
+    html += '</tr></thead><tbody>';
+
+    const secLabels={resurtido:'Resurtido NAMUH',proyecto:'Proyectos',pedido_especial:'Pedidos especiales',ensamble:'Ensambles',prototipo:'Prototipos'};
+
+    Object.entries(grupos).forEach(([cat,items])=>{
+      if(!items.length) return;
+      html+=`<tr><td colspan="4" style="padding:7px 12px;font-size:10px;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.05em;background:var(--bg);border-bottom:1px solid var(--border-soft);">${secLabels[cat]||cat}</td></tr>`;
+
+      items.forEach(p=>{
+        const color = STATUS_COLOR[p.estado]||'#888';
+        const catCls = CAT_CSS[p.categoria]||'';
+        const startD = p.fecha_entrada ? new Date(p.fecha_entrada+'T12:00:00') : null;
+        const maxE   = startD && p.semanas_max ? new Date(startD.getTime()+p.semanas_max*WEEK_MS) : null;
+        const minE   = startD && p.semanas_min ? new Date(startD.getTime()+p.semanas_min*WEEK_MS) : null;
+        const entrega= p.fecha_entrega ? new Date(p.fecha_entrega+'T12:00:00') : maxE;
+        const isOver = p.estado==='retraso' || (maxE && TODAY>maxE);
+
+        // Calcular tooltip
+        let tipHTML = `<strong>${p.nombre}${p.cliente?' — '+p.cliente:''}</strong>`;
+        if(p.codigo) tipHTML += `<br><span style="opacity:.6;">${p.codigo}</span>`;
+        tipHTML += `<hr style="border:none;border-top:1px solid rgba(255,255,255,.15);margin:6px 0;">`;
+        if(startD) tipHTML += `Entrada: ${fmtDate(p.fecha_entrada)}<br>`;
+        if(p.semanas_min||p.semanas_max){
+          const sw = p.semanas_min===p.semanas_max ? p.semanas_min+'sem' : p.semanas_min+'-'+p.semanas_max+' sem';
+          tipHTML += `Plazo: ${sw}<br>`;
+        }
+        if(entrega) tipHTML += `Entrega est.: ${fmtDate(p.fecha_entrega||null)}<br>`;
+        if(isOver && startD && maxE){
+          const diasRet = diffDays(maxE, TODAY);
+          if(diasRet>0) tipHTML += `<span style="color:#F87171;font-weight:600;">⚠ ${diasRet} días de retraso</span><br>`;
+        }
+        if(p.nota_estado) tipHTML += `<span style="opacity:.75;font-style:italic;">${p.nota_estado}</span>`;
+
+        // Construir barra
+        const rowId = 'gr-'+Math.random().toString(36).substr(2,6);
+        let barHTML = `<div id="${rowId}" style="display:flex;position:relative;height:26px;cursor:crosshair;">`;
+        MONTHS.forEach((mo,i)=>{
+          const isExp=expandedMonths[i], weeks=weeksOfMonth(mo), flex=isExp?weeks.length:1;
+          barHTML+=`<div style="flex:${flex};position:relative;border-right:1px solid var(--border-soft);height:100%;">`;
+          if(TODAY>=mo.start&&TODAY<mo.end){
+            const moPct=(TODAY-mo.start)/(mo.end-mo.start)*100;
+            if(isExp){
+              weeks.forEach((wk,wi)=>{ if(TODAY>=wk.start&&TODAY<wk.end){ const wPct=(TODAY-wk.start)/(wk.end-wk.start)*100; barHTML+=`<div style="position:absolute;top:0;bottom:0;left:calc(${wi}/${weeks.length}*100% + ${wPct}/${weeks.length}%);width:1.5px;background:#E24B4A;z-index:10;"></div>`; } });
+            } else { barHTML+=`<div style="position:absolute;top:0;bottom:0;left:${moPct}%;width:1.5px;background:#E24B4A;z-index:10;"></div>`; }
+          }
+          if(startD && maxE){
+            const mS=mo.start, mE=mo.end;
+            const barS=new Date(Math.max(startD,mS)), barE=new Date(Math.min(maxE,mE));
+            const fillE=new Date(Math.min(TODAY,maxE,mE)), fillS=new Date(Math.max(startD,mS));
+            if(barS<mE && barE>mS){
+              const mDur=mE-mS;
+              const rL=(barS-mS)/mDur*100, rW=(barE-barS)/mDur*100;
+              const fL=(fillS-mS)/mDur*100, fW=Math.max(0,(fillE-fillS)/mDur*100);
+              barHTML+=`<div style="position:absolute;top:6px;height:14px;left:${rL}%;width:${rW}%;border-radius:3px;background:${isOver?'#E24B4A':'#639922'};opacity:.3;"></div>`;
+              if(fW>0) barHTML+=`<div style="position:absolute;top:6px;height:14px;left:${fL}%;width:${fW}%;border-radius:3px;background:${isOver?'#E24B4A':'#B8916A'};"></div>`;
+            }
+          }
+          barHTML+='</div>';
+        });
+        if(!startD) barHTML+=`<div style="position:absolute;top:6px;left:8px;font-size:10px;color:var(--text-tertiary);font-style:italic;pointer-events:none;">sin fecha definida</div>`;
+        barHTML+='</div>';
+
+        html+=`<tr data-id="${rowId}" style="border-bottom:1px solid var(--border-soft);" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''">
+          <td style="padding:6px 12px;"><div style="font-weight:600;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${p.nombre}${p.cliente?' — '+p.cliente:''}</div><div style="font-size:10px;color:var(--text-tertiary);">${p.codigo||''}</div></td>
+          <td style="padding:6px 8px;"><span class="cat-badge ${catCls}" style="font-size:9px;">${CAT_LABELS[p.categoria]||''}</span></td>
+          <td style="padding:3px 0;" data-tip='${JSON.stringify(tipHTML)}'>${barHTML}</td>
+          <td style="padding:6px 8px;font-size:10px;font-weight:500;color:${color};white-space:nowrap;"><span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:${color};margin-right:4px;vertical-align:middle;"></span>${p.nota_estado||EST_LABELS[p.estado]||p.estado}</td>
+        </tr>`;
+      });
+    });
+
+    html += '</tbody></table>';
+    el.innerHTML = html;
+
+    // Vincular tooltips
+    el.querySelectorAll('td[data-tip]').forEach(td=>{
+      const content = td.getAttribute('data-tip');
+      try{ showTip(td, JSON.parse(content)); } catch(e){ showTip(td, content); }
+    });
+  }
+
+  window.toggleMonth = function(i){ expandedMonths[i]=!expandedMonths[i]; buildGantt(); };
+
+  // Exponer para que Supabase lo llame después del login
+  window.cargarGantt = cargarGantt;
+
+  document.addEventListener('DOMContentLoaded', ()=>{ if(!window.sb) buildGantt(); });
+  const origShow = window.showView;
+  window.showView = function(id){ if(typeof origShow==='function') origShow(id); if(id==='cronograma') cargarGantt(); };
 })();
-</script>
+
 
 <script>
   (function(){
@@ -2074,6 +2049,7 @@ async function onLogin(user) {
     cargarPersonas(),
     cargarProyectosDB(),
     cargarRequisicionesDB(),
+    cargarGantt(),
   ]);
 }
 
