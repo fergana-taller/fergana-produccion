@@ -1,0 +1,2251 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fergana — Producción</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #F7F5F0;
+    --surface: #FFFFFF;
+    --border: #E4E0D8;
+    --border-soft: #EEEBE4;
+    --text: #1A1814;
+    --text-secondary: #6B6760;
+    --text-tertiary: #A8A49E;
+    --accent: #8B5E3C;
+    --accent-light: #F0E6DC;
+    --accent-mid: #C49070;
+    --green: #2D6A4F;
+    --green-light: #D8EFE4;
+    --red: #9B2226;
+    --red-light: #F8DEDE;
+    --amber: #7D5A00;
+    --amber-light: #FFF0C2;
+    --blue: #1B4F8A;
+    --blue-light: #D6E8F7;
+    --gray-light: #F0EDE8;
+    --radius: 8px;
+    --radius-lg: 12px;
+    --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  }
+
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 14px;
+    line-height: 1.5;
+    min-height: 100vh;
+  }
+
+  /* SIDEBAR */
+  .layout { display: flex; min-height: 100vh; }
+
+  .sidebar {
+    width: 220px;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    top: 0; left: 0; bottom: 0;
+    z-index: 100;
+  }
+
+  .sidebar-brand {
+    padding: 20px 18px 16px;
+    border-bottom: 1px solid var(--border-soft);
+  }
+
+  .brand-mark {
+    width: 32px; height: 32px;
+    background: var(--accent);
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+    margin-bottom: 10px;
+  }
+
+  .brand-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    letter-spacing: -0.01em;
+  }
+
+  .brand-sub {
+    font-size: 11px;
+    color: var(--text-tertiary);
+    margin-top: 1px;
+  }
+
+  .sidebar-nav {
+    padding: 12px 10px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .nav-section {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-tertiary);
+    padding: 10px 8px 4px;
+  }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 8px 10px;
+    border-radius: var(--radius);
+    cursor: pointer;
+    font-size: 13px;
+    color: var(--text-secondary);
+    transition: all 0.15s;
+    border: none;
+    background: none;
+    width: 100%;
+    text-align: left;
+  }
+
+  .nav-item:hover { background: var(--bg); color: var(--text); }
+  .nav-item.active { background: var(--accent-light); color: var(--accent); font-weight: 500; }
+
+  .nav-icon { font-size: 15px; flex-shrink: 0; }
+
+  .nav-badge {
+    margin-left: auto;
+    font-size: 10px;
+    font-weight: 600;
+    padding: 1px 6px;
+    border-radius: 10px;
+    background: var(--red-light);
+    color: var(--red);
+  }
+
+  .nav-badge.warn { background: var(--amber-light); color: var(--amber); }
+
+  /* MAIN */
+  .main {
+    margin-left: 220px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+  }
+
+  .topbar {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 28px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+  }
+
+  .topbar-title { font-size: 15px; font-weight: 600; letter-spacing: -0.01em; }
+  .topbar-date { font-size: 12px; color: var(--text-tertiary); }
+
+  .topbar-actions { display: flex; gap: 8px; }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 14px;
+    border-radius: var(--radius);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    transition: all 0.15s;
+  }
+
+  .btn:hover { background: var(--bg); }
+  .btn-primary { background: var(--accent); color: white; border-color: var(--accent); }
+  .btn-primary:hover { background: #7a5234; }
+
+  .content { padding: 24px 28px; flex: 1; }
+
+  /* VIEWS */
+  .view { display: none; }
+  .view.active { display: block; }
+
+  /* STATS GRID */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 14px 16px;
+    box-shadow: var(--shadow);
+  }
+
+  .stat-label { font-size: 11px; color: var(--text-tertiary); margin-bottom: 6px; font-weight: 500; letter-spacing: 0.02em; }
+  .stat-value { font-size: 26px; font-weight: 600; letter-spacing: -0.03em; color: var(--text); line-height: 1; }
+  .stat-card.danger { border-color: #F0BFBF; }
+  .stat-card.danger .stat-value { color: var(--red); }
+  .stat-card.warn { border-color: #EDD98A; }
+  .stat-card.warn .stat-value { color: var(--amber); }
+  .stat-card.success .stat-value { color: var(--green); }
+
+  /* GRID 2COL */
+  .grid-2 { display: grid; grid-template-columns: 1fr 360px; gap: 16px; }
+  .grid-equal { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px; }
+
+  /* CARD */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+
+  .card-header {
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--border-soft);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .card-title { font-size: 13px; font-weight: 600; }
+  .card-body { padding: 0; }
+  .card-body-pad { padding: 16px 18px; }
+
+  /* TABLE */
+  table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  thead th {
+    padding: 9px 16px;
+    text-align: left;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-tertiary);
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--border-soft);
+    background: var(--bg);
+  }
+  tbody td {
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--border-soft);
+    vertical-align: middle;
+  }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr { transition: background 0.1s; cursor: pointer; }
+  tbody tr:hover { background: #FAFAF8; }
+
+  /* BADGES */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    font-weight: 500;
+    padding: 3px 9px;
+    border-radius: 20px;
+    white-space: nowrap;
+  }
+  .badge::before { content: ''; width: 5px; height: 5px; border-radius: 50%; }
+
+  .badge-ret    { background: var(--red-light);   color: var(--red);   } .badge-ret::before    { background: var(--red); }
+  .badge-prog   { background: var(--amber-light);  color: var(--amber); } .badge-prog::before   { background: var(--amber); }
+  .badge-listo  { background: var(--green-light);  color: var(--green); } .badge-listo::before  { background: var(--green); }
+  .badge-esp    { background: var(--blue-light);   color: var(--blue);  } .badge-esp::before    { background: var(--blue); }
+  .badge-pausa  { background: var(--gray-light);   color: var(--text-secondary); } .badge-pausa::before { background: var(--text-tertiary); }
+
+  .cat-badge {
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 7px;
+    border-radius: 4px;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+  }
+  .cat-resurtido  { background: var(--amber-light);  color: var(--amber); }
+  .cat-proyecto   { background: var(--blue-light);   color: var(--blue); }
+  .cat-pedido     { background: var(--accent-light);  color: var(--accent); }
+  .cat-ensamble   { background: var(--green-light);  color: var(--green); }
+  .cat-prototipo  { background: #F3E8FF; color: #6B21A8; }
+
+  /* AVATARS */
+  .avatar-group { display: flex; gap: 3px; }
+  .avatar {
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; font-weight: 600;
+    flex-shrink: 0;
+    border: 2px solid var(--surface);
+  }
+  .av-an { background: #FDE8D0; color: #7D3C12; }
+  .av-ro { background: #D1F0E4; color: #145A38; }
+  .av-ma { background: #E4DDFB; color: #3D2A8A; }
+  .av-le { background: #FAD9CF; color: #8C2D1A; }
+  .av-ed { background: #D3E8F9; color: #1A4F7A; }
+  .av-mo { background: #FAD6E8; color: #8C2255; }
+  .av-la { background: #D7F0DA; color: #1A5C28; }
+
+  /* AREA FLOW */
+  .area-flow {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    color: var(--text-tertiary);
+  }
+  .area-pill {
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 500;
+  }
+  .area-active { background: var(--accent-light); color: var(--accent); }
+  .area-done   { background: var(--green-light);  color: var(--green); text-decoration: line-through; opacity: 0.6; }
+  .area-next   { border: 1px dashed var(--border); color: var(--text-tertiary); }
+  .area-arrow  { color: var(--text-tertiary); font-size: 10px; }
+
+  /* ALERT ROWS */
+  .alert-list { display: flex; flex-direction: column; }
+  .alert-item {
+    display: flex;
+    gap: 10px;
+    padding: 12px 18px;
+    border-bottom: 1px solid var(--border-soft);
+    align-items: flex-start;
+  }
+  .alert-item:last-child { border-bottom: none; }
+  .alert-icon { font-size: 15px; flex-shrink: 0; margin-top: 1px; }
+  .alert-title { font-size: 12.5px; font-weight: 500; margin-bottom: 2px; }
+  .alert-sub   { font-size: 11.5px; color: var(--text-secondary); }
+  .alert-danger .alert-icon { color: var(--red); }
+  .alert-warn   .alert-icon { color: var(--amber); }
+  .alert-info   .alert-icon { color: var(--blue); }
+
+  /* TEAM ROWS */
+  .team-list { display: flex; flex-direction: column; }
+  .team-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 18px;
+    border-bottom: 1px solid var(--border-soft);
+  }
+  .team-item:last-child { border-bottom: none; }
+  .team-name  { font-size: 12.5px; font-weight: 500; color: var(--text); }
+  .team-task  { font-size: 11.5px; color: var(--text-secondary); }
+  .team-right { margin-left: auto; }
+
+  /* PERSONAL MODULE */
+  .people-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+  }
+
+  .person-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 16px;
+    box-shadow: var(--shadow);
+  }
+
+  .person-header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+  .person-avatar { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; flex-shrink: 0; }
+  .person-name  { font-size: 13.5px; font-weight: 600; }
+  .person-role  { font-size: 11.5px; color: var(--text-secondary); margin-top: 1px; }
+  .person-divider { border: none; border-top: 1px solid var(--border-soft); margin: 10px 0; }
+  .person-stat  { display: flex; justify-content: space-between; font-size: 12px; padding: 3px 0; }
+  .person-stat-label { color: var(--text-secondary); }
+  .person-stat-value { font-weight: 500; }
+
+  /* PROYECTOS FILTER */
+  .filter-bar {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+
+  .filter-btn {
+    font-size: 12px;
+    padding: 6px 14px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.15s;
+    font-weight: 500;
+  }
+  .filter-btn:hover { border-color: var(--accent-mid); color: var(--accent); }
+  .filter-btn.active { background: var(--accent); color: white; border-color: var(--accent); }
+
+  /* REGISTRO HORAS */
+  .hours-form {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+  .hours-row {
+    display: grid;
+    grid-template-columns: 200px 1fr 80px 1fr;
+    gap: 12px;
+    align-items: center;
+    padding: 12px 18px;
+    border-bottom: 1px solid var(--border-soft);
+  }
+  .hours-row:last-child { border-bottom: none; }
+  .hours-person { display: flex; align-items: center; gap: 8px; font-size: 12.5px; font-weight: 500; }
+
+  select, input[type=number], input[type=text], input[type=date] {
+    font-size: 12.5px;
+    padding: 7px 10px;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    width: 100%;
+    font-family: inherit;
+    transition: border-color 0.15s;
+  }
+  select:focus, input:focus { outline: none; border-color: var(--accent-mid); }
+
+  /* INVENTARIO */
+  .inv-level {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .inv-bar {
+    width: 64px;
+    height: 4px;
+    background: var(--border-soft);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .inv-fill { height: 100%; border-radius: 4px; }
+
+  /* EMPTY STATE */
+  .empty {
+    padding: 48px 24px;
+    text-align: center;
+    color: var(--text-tertiary);
+    font-size: 13px;
+  }
+
+  /* SECTION TITLE */
+  .section-title {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--text-tertiary);
+    margin-bottom: 12px;
+    margin-top: 24px;
+  }
+  .section-title:first-child { margin-top: 0; }
+
+  /* MAÑANA BADGE */
+  .tomorrow { background: var(--green-light); color: var(--green); padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+  .urgent   { background: var(--red-light);   color: var(--red);   padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+  .days-ok  { background: var(--gray-light);  color: var(--text-secondary); padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 500; }
+
+  .mono { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--text-tertiary); }
+
+  /* LOGIN */
+  .login-wrap {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg);
+  }
+  .login-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 36px 32px;
+    width: 100%;
+    max-width: 380px;
+    box-shadow: var(--shadow);
+  }
+  .login-logo { text-align: center; margin-bottom: 24px; }
+  .login-title { font-size: 18px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+  .login-sub { font-size: 13px; color: var(--text-secondary); }
+  .login-field { margin-bottom: 14px; }
+  .login-label { font-size:11px; font-weight:600; color:var(--text-secondary); text-transform:uppercase; letter-spacing:.04em; display:block; margin-bottom:5px; }
+  .login-error { font-size:12px; color:var(--red); background:var(--red-light); padding:8px 12px; border-radius:var(--radius); margin-bottom:14px; display:none; }
+
+  @media (max-width: 900px) {
+    .sidebar { width: 56px; }
+    .brand-name, .brand-sub, .nav-item span, .nav-badge, .nav-section { display: none; }
+    .nav-item { justify-content: center; padding: 10px; }
+    .main { margin-left: 56px; }
+    .stats-grid { grid-template-columns: repeat(2, 1fr); }
+    .grid-2 { grid-template-columns: 1fr; }
+    .grid-equal { grid-template-columns: 1fr; }
+    .people-grid { grid-template-columns: 1fr 1fr; }
+    .hours-row { grid-template-columns: 1fr 1fr; }
+    .content { padding: 16px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══ LOGIN ═══ -->
+<div id="login-screen" class="login-wrap">
+  <div class="login-card">
+    <div class="login-logo">
+      <svg width="40" height="40" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" style="border-radius:6px;border:1px solid var(--border);">
+        <rect width="32" height="32" fill="#F7F2EC"/>
+        <line x1="6" y1="0" x2="4" y2="32" stroke="#C4A882" stroke-width="0.7" opacity="0.9"/>
+        <line x1="10" y1="0" x2="9" y2="32" stroke="#B8916A" stroke-width="0.5" opacity="0.7"/>
+        <line x1="14" y1="0" x2="11" y2="32" stroke="#C4A882" stroke-width="0.8" opacity="0.8"/>
+        <line x1="17" y1="0" x2="15" y2="32" stroke="#A07850" stroke-width="0.5" opacity="0.6"/>
+        <line x1="20" y1="0" x2="19" y2="32" stroke="#C4A882" stroke-width="0.7" opacity="0.9"/>
+        <line x1="24" y1="0" x2="23" y2="32" stroke="#B8916A" stroke-width="0.5" opacity="0.7"/>
+        <path d="M13 7 Q16 4 19 7 Q22 10 19 13 Q16 16 13 13 Q10 10 13 7Z" fill="none" stroke="#A07850" stroke-width="0.6" opacity="0.5"/>
+        <path d="M11 20 Q14 17 17 20 Q20 23 17 26 Q14 29 11 26 Q8 23 11 20Z" fill="none" stroke="#A07850" stroke-width="0.5" opacity="0.4"/>
+      </svg>
+      <div style="margin-top:12px;">
+        <div class="login-title">FERGANA</div>
+        <div class="login-sub">Sistema de producción</div>
+      </div>
+    </div>
+    <div id="login-error" class="login-error">Usuario o contraseña incorrectos. Intenta de nuevo.</div>
+    <div class="login-field">
+      <label class="login-label">Usuario</label>
+      <input type="text" id="login-username" placeholder="ej. sofia" style="width:100%;text-transform:lowercase;" onkeydown="if(event.key==='Enter') doLogin()">
+    </div>
+    <div class="login-field">
+      <label class="login-label">Contraseña</label>
+      <input type="password" id="login-pass" placeholder="••••••••" style="width:100%;" onkeydown="if(event.key==='Enter') doLogin()">
+    </div>
+    <button class="btn btn-primary" style="width:100%;justify-content:center;padding:10px;" onclick="doLogin()">Entrar</button>
+    <div id="login-loading" style="text-align:center;font-size:12px;color:var(--text-tertiary);margin-top:10px;display:none;">Verificando...</div>
+  </div>
+</div>
+
+<div id="app-screen" style="display:none;">
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
+        <div class="brand-mark" style="background:none;overflow:hidden;border-radius:6px;border:1px solid var(--border);">
+          <svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+            <rect width="32" height="32" fill="#F7F2EC"/>
+            <line x1="6" y1="0" x2="4" y2="32" stroke="#C4A882" stroke-width="0.7" opacity="0.9"/>
+            <line x1="10" y1="0" x2="9" y2="32" stroke="#B8916A" stroke-width="0.5" opacity="0.7"/>
+            <line x1="14" y1="0" x2="11" y2="32" stroke="#C4A882" stroke-width="0.8" opacity="0.8"/>
+            <line x1="17" y1="0" x2="15" y2="32" stroke="#A07850" stroke-width="0.5" opacity="0.6"/>
+            <line x1="20" y1="0" x2="19" y2="32" stroke="#C4A882" stroke-width="0.7" opacity="0.9"/>
+            <line x1="24" y1="0" x2="23" y2="32" stroke="#B8916A" stroke-width="0.5" opacity="0.7"/>
+            <line x1="27" y1="0" x2="26" y2="32" stroke="#C4A882" stroke-width="0.6" opacity="0.8"/>
+            <!-- nudo superior -->
+            <path d="M13 7 Q16 4 19 7 Q22 10 19 13 Q16 16 13 13 Q10 10 13 7Z" fill="none" stroke="#A07850" stroke-width="0.6" opacity="0.5"/>
+            <!-- nudo inferior -->
+            <path d="M11 20 Q14 17 17 20 Q20 23 17 26 Q14 29 11 26 Q8 23 11 20Z" fill="none" stroke="#A07850" stroke-width="0.5" opacity="0.4"/>
+          </svg>
+        </div>
+        <div>
+          <div class="brand-name">FERGANA</div>
+          <div class="brand-sub">Producción</div>
+        </div>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section">Principal</div>
+      <button class="nav-item active" onclick="showView('dashboard')">
+        <span class="nav-icon">⊞</span>
+        <span>Dashboard</span>
+      </button>
+      <button class="nav-item" onclick="showView('proyectos')">
+        <span class="nav-icon">◻</span>
+        <span>Proyectos</span>
+        <span class="nav-badge warn">13</span>
+      </button>
+      <div class="nav-section">Operaciones</div>
+      <button class="nav-item" onclick="showView('personal')">
+        <span class="nav-icon">◎</span>
+        <span>Personal</span>
+      </button>
+      <button class="nav-item" onclick="showView('horas')">
+        <span class="nav-icon">◷</span>
+        <span>Registrar horas</span>
+      </button>
+      <button class="nav-item" onclick="showView('materiales')">
+        <span class="nav-icon">▦</span>
+        <span>Materiales</span>
+        <span class="nav-badge">3</span>
+      </button>
+      <button class="nav-item" onclick="showView('requisiciones')">
+        <span class="nav-icon">◈</span>
+        <span>Requisiciones</span>
+      </button>
+      <button class="nav-item" onclick="showView('cronograma')">
+        <span class="nav-icon">▤</span>
+        <span>Cronograma</span>
+      </button>
+      <div style="margin-top:auto;padding:12px 10px;border-top:1px solid var(--border-soft);">
+        <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;">
+          <div style="width:28px;height:28px;border-radius:50%;background:var(--accent-light);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:var(--accent);flex-shrink:0;">👤</div>
+          <div style="flex:1;min-width:0;">
+            <div id="sidebar-user-name" style="font-size:12px;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">—</div>
+            <div id="sidebar-user-role" style="font-size:10px;color:var(--text-tertiary);">—</div>
+          </div>
+        </div>
+        <button class="nav-item" onclick="cerrarSesion()" style="color:var(--red);width:100%;">
+          <span class="nav-icon">⏻</span>
+          <span>Cerrar sesión</span>
+        </button>
+      </div>
+    </nav>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <!-- TOPBAR -->
+    <div class="topbar">
+      <div>
+        <div class="topbar-title" id="topbar-title">Dashboard</div>
+        <div class="topbar-date" id="topbar-date"></div>
+      </div>
+      <div class="topbar-actions">
+        <button class="btn" onclick="showView('horas')">⏱ Registrar horas</button>
+        <button class="btn btn-primary" onclick="showView('proyectos')">+ Nuevo proyecto</button>
+      </div>
+    </div>
+
+    <div class="content">
+
+      <!-- ═══════════ DASHBOARD ═══════════ -->
+      <div id="view-dashboard" class="view active">
+
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-label">Proyectos activos</div>
+            <div class="stat-value">13</div>
+          </div>
+          <div class="stat-card success">
+            <div class="stat-label">En producción hoy</div>
+            <div class="stat-value">8</div>
+          </div>
+          <div class="stat-card danger">
+            <div class="stat-label">Con retraso</div>
+            <div class="stat-value">3</div>
+          </div>
+          <div class="stat-card warn">
+            <div class="stat-label">En espera</div>
+            <div class="stat-value">7</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Salen mañana</div>
+            <div class="stat-value">2</div>
+          </div>
+        </div>
+
+        <div class="grid-2">
+
+          <!-- Proyectos -->
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">Proyectos en curso</span>
+              <button class="btn" onclick="showView('proyectos')">Ver todos →</button>
+            </div>
+            <div class="card-body">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Proyecto</th>
+                    <th>Área actual</th>
+                    <th>Equipo</th>
+                    <th>Estado</th>
+                    <th>Entrega</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>
+                      <div style="font-weight:600;font-size:12.5px;">Sillas Diez — NAMUH</div>
+                      <div class="mono">006583 + 006987 · 4 pzas</div>
+                    </td>
+                    <td><span class="area-pill area-active">Espera tapicería</span></td>
+                    <td><span style="font-size:11px;color:var(--text-tertiary);">Proveedor ext.</span></td>
+                    <td><span class="badge badge-ret">Retraso</span></td>
+                    <td><span class="urgent">11 mar ⚠</span></td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <div style="font-weight:600;font-size:12.5px;">Puertas interiores — Senderos</div>
+                      <div class="mono">6 piezas</div>
+                    </td>
+                    <td><span class="area-pill area-active">Carpintería</span></td>
+                    <td>
+                      <div class="avatar-group">
+                        <div class="avatar av-ro">RO</div>
+                        <div class="avatar av-ma">MA</div>
+                      </div>
+                    </td>
+                    <td><span class="badge badge-prog">En producción</span></td>
+                    <td><span class="days-ok">3 jun</span></td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <div style="font-weight:600;font-size:12.5px;">Puertas exteriores — Senderos</div>
+                      <div class="mono">2 piezas · listas para instalar</div>
+                    </td>
+                    <td><span class="area-pill area-active">Lista · instalar</span></td>
+                    <td><span style="font-size:11px;color:var(--text-tertiary);">—</span></td>
+                    <td><span class="badge badge-listo">Lista</span></td>
+                    <td><span class="days-ok">12 jun</span></td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <div style="font-weight:600;font-size:12.5px;">Ventana — Senderos</div>
+                    </td>
+                    <td><span class="area-pill area-active">Carpintería</span></td>
+                    <td><div class="avatar av-ed">ED</div></td>
+                    <td><span class="badge badge-prog">En producción</span></td>
+                    <td><span class="days-ok">12 jun</span></td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <div style="font-weight:600;font-size:12.5px;">Duela borneo — Senderos</div>
+                      <div class="mono">Instalación esta semana</div>
+                    </td>
+                    <td><span class="area-pill area-active">Carpintería</span></td>
+                    <td><div class="avatar av-le">LE</div></td>
+                    <td><span class="badge badge-prog">En producción</span></td>
+                    <td><span class="urgent">10 jun</span></td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <div style="font-weight:600;font-size:12.5px;">Shutters casita — Senderos</div>
+                      <div class="mono">4 piezas · falta muestra de tono</div>
+                    </td>
+                    <td><span class="area-pill area-active">Terminados</span></td>
+                    <td><div class="avatar av-la">LA</div></td>
+                    <td><span class="badge badge-ret">Retraso</span></td>
+                    <td><span class="urgent">3 mar ⚠</span></td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <div style="font-weight:600;font-size:12.5px;">Mesa mármol — A. Vázquez</div>
+                      <div class="mono">PY-006223</div>
+                    </td>
+                    <td><span class="area-pill area-active">Terminando</span></td>
+                    <td><div class="avatar av-an">AN</div></td>
+                    <td><span class="badge badge-prog">En producción</span></td>
+                    <td><span class="days-ok">19 jun</span></td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <div style="font-weight:600;font-size:12.5px;">Gabinete TV — K. Tavarez</div>
+                      <div class="mono">007003 · espera herrajes Funart</div>
+                    </td>
+                    <td><span class="area-pill area-active">Espera herrajes</span></td>
+                    <td><span style="font-size:11px;color:var(--text-tertiary);">Funart ext.</span></td>
+                    <td><span class="badge badge-ret">Retraso</span></td>
+                    <td><span class="urgent">21 may ⚠</span></td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <div style="font-weight:600;font-size:12.5px;">Lámpara Sama</div>
+                      <div class="mono">Falta barniz</div>
+                    </td>
+                    <td><span class="area-pill area-active">Terminados</span></td>
+                    <td><div class="avatar av-la">LA</div></td>
+                    <td><span class="badge badge-prog">Casi lista</span></td>
+                    <td><span style="font-size:11px;color:var(--text-tertiary);">—</span></td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <div style="font-weight:600;font-size:12.5px;">Trinche — I. Beltrán</div>
+                      <div class="mono">350×80×90</div>
+                    </td>
+                    <td><span class="area-pill area-active">Pulido</span></td>
+                    <td><div class="avatar av-mo">MO</div></td>
+                    <td><span class="badge badge-prog">En pulido</span></td>
+                    <td><span class="days-ok">3 jul</span></td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <div style="font-weight:600;font-size:12.5px;">Librero/TV — I. Beltrán</div>
+                      <div class="mono">430×55×250 · pausa por duelas</div>
+                    </td>
+                    <td><span class="area-pill" style="background:var(--gray-light);color:var(--text-secondary);">Carpintería</span></td>
+                    <td><div class="avatar av-le">LE</div></td>
+                    <td><span class="badge badge-pausa">En pausa</span></td>
+                    <td><span class="days-ok">17 jul</span></td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <div style="font-weight:600;font-size:12.5px;">Pedestal — I. Beltrán</div>
+                      <div class="mono">38×38×110</div>
+                    </td>
+                    <td><span class="area-pill" style="background:var(--green-light);color:var(--green);">Empaque ✓</span></td>
+                    <td><div class="avatar av-la">LA</div></td>
+                    <td><span class="badge badge-listo">Sale hoy</span></td>
+                    <td><span class="tomorrow">Hoy</span></td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <div style="font-weight:600;font-size:12.5px;">Cajonera — I. Beltrán</div>
+                      <div class="mono">150×62×78 · sale de pulido hoy</div>
+                    </td>
+                    <td><span class="area-pill area-active">Terminados</span></td>
+                    <td><div class="avatar av-mo">MO</div></td>
+                    <td><span class="badge badge-prog">Entra a terminados</span></td>
+                    <td><span class="days-ok">3 jul</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Sidebar derecho -->
+          <div style="display:flex;flex-direction:column;gap:16px;">
+
+            <!-- Equipo hoy -->
+            <div class="card">
+              <div class="card-header">
+                <span class="card-title">Equipo hoy</span>
+                <button class="btn" onclick="showView('personal')">Ver →</button>
+              </div>
+              <div class="team-list">
+                <div class="team-item">
+                  <div class="avatar av-an">AN</div>
+                  <div>
+                    <div class="team-name">Antonio</div>
+                    <div class="team-task">Mesa mármol — Vázquez</div>
+                  </div>
+                  <div class="team-right"><span class="badge badge-prog">Activo</span></div>
+                </div>
+                <div class="team-item">
+                  <div class="avatar av-ro">RO</div>
+                  <div>
+                    <div class="team-name">Roberto</div>
+                    <div class="team-task">Puertas int. — Senderos</div>
+                  </div>
+                  <div class="team-right"><span class="badge badge-prog">Activo</span></div>
+                </div>
+                <div class="team-item">
+                  <div class="avatar av-ma">MA</div>
+                  <div>
+                    <div class="team-name">Mario</div>
+                    <div class="team-task">Puertas int. — Senderos</div>
+                  </div>
+                  <div class="team-right"><span class="badge badge-prog">Activo</span></div>
+                </div>
+                <div class="team-item">
+                  <div class="avatar av-le">LE</div>
+                  <div>
+                    <div class="team-name">Leonardo</div>
+                    <div class="team-task">Duela borneo — Senderos</div>
+                  </div>
+                  <div class="team-right"><span class="badge badge-prog">Activo</span></div>
+                </div>
+                <div class="team-item">
+                  <div class="avatar av-ed">ED</div>
+                  <div>
+                    <div class="team-name">Eduardo</div>
+                    <div class="team-task">Ventana — Senderos</div>
+                  </div>
+                  <div class="team-right"><span class="badge badge-prog">Activo</span></div>
+                </div>
+                <div class="team-item">
+                  <div class="avatar av-mo">MO</div>
+                  <div>
+                    <div class="team-name">Mónica</div>
+                    <div class="team-task">Trinche + Cajonera — Beltrán</div>
+                  </div>
+                  <div class="team-right"><span class="badge badge-prog">Activo</span></div>
+                </div>
+                <div class="team-item">
+                  <div class="avatar av-la">LA</div>
+                  <div>
+                    <div class="team-name">Luis Ángel</div>
+                    <div class="team-task">Pedestal · Lámpara Sama</div>
+                  </div>
+                  <div class="team-right"><span class="badge badge-prog">Activo</span></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Alertas -->
+            <div class="card" style="border-color:#EDD98A;">
+              <div class="card-header">
+                <span class="card-title">⚠ Alertas</span>
+              </div>
+              <div class="alert-list">
+                <div class="alert-item alert-danger">
+                  <span class="alert-icon">●</span>
+                  <div>
+                    <div class="alert-title">Sillas NAMUH — 3 meses de retraso</div>
+                    <div class="alert-sub">Esperando tapicería de piel externa</div>
+                  </div>
+                </div>
+                <div class="alert-item alert-danger">
+                  <span class="alert-icon">●</span>
+                  <div>
+                    <div class="alert-title">Gabinete Karina — retraso 18 días</div>
+                    <div class="alert-sub">Esperando herrajes de Funart</div>
+                  </div>
+                </div>
+                <div class="alert-item alert-danger">
+                  <span class="alert-icon">●</span>
+                  <div>
+                    <div class="alert-title">Shutters Senderos — 3 meses de retraso</div>
+                    <div class="alert-sub">Luis Ángel pendiente: muestra de tono</div>
+                  </div>
+                </div>
+                <div class="alert-item alert-warn">
+                  <span class="alert-icon">◐</span>
+                  <div>
+                    <div class="alert-title">Duela borneo — instalación esta semana</div>
+                    <div class="alert-sub">Leonardo · fecha límite 10 jun</div>
+                  </div>
+                </div>
+                <div class="alert-item alert-warn">
+                  <span class="alert-icon">◐</span>
+                  <div>
+                    <div class="alert-title">Pedestal lista para empacar hoy</div>
+                    <div class="alert-sub">Confirmar empaque con Luis Ángel</div>
+                  </div>
+                </div>
+                <div class="alert-item alert-info">
+                  <span class="alert-icon">○</span>
+                  <div>
+                    <div class="alert-title">7 proyectos en espera</div>
+                    <div class="alert-sub">Ensambles · Carrasco · Vitrina B · Minerva</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════════ PROYECTOS ═══════════ -->
+      <div id="view-proyectos" class="view">
+
+        <div class="filter-bar">
+          <button class="filter-btn active" onclick="filterProyectos('todos', this)">Todos (13)</button>
+          <button class="filter-btn" onclick="filterProyectos('resurtido', this)">Resurtido</button>
+          <button class="filter-btn" onclick="filterProyectos('proyecto', this)">Proyecto</button>
+          <button class="filter-btn" onclick="filterProyectos('pedido', this)">Pedido especial</button>
+          <button class="filter-btn" onclick="filterProyectos('ensamble', this)">Ensamble</button>
+          <button class="filter-btn" onclick="filterProyectos('prototipo', this)">Prototipo</button>
+          <button class="filter-btn" onclick="filterProyectos('espera', this)">En espera</button>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Todos los proyectos</span>
+            <button class="btn btn-primary">+ Nuevo proyecto</button>
+          </div>
+          <div class="card-body">
+            <table>
+              <thead>
+                <tr>
+                  <th>Proyecto / pieza</th>
+                  <th>Categoría</th>
+                  <th>Área actual</th>
+                  <th>Equipo</th>
+                  <th>Estado</th>
+                  <th>Entrega</th>
+                </tr>
+              </thead>
+              <tbody id="proyectos-tbody">
+                <!-- RESURTIDO NAMUH -->
+                <tr data-cat="resurtido" data-estado="espera">
+                  <td><div style="font-weight:600;">Sillas Diez — NAMUH</div><div class="mono">006583 · 62×80×45×95 · 2 pzas</div></td>
+                  <td><span class="cat-badge cat-resurtido">Resurtido</span></td>
+                  <td><span class="area-pill area-active">Espera tapicería</span></td>
+                  <td><span style="font-size:11px;color:var(--text-tertiary);">Proveedor ext.</span></td>
+                  <td><span class="badge badge-ret">Retraso</span></td>
+                  <td><span class="urgent">11 mar ⚠</span></td>
+                </tr>
+                <tr data-cat="resurtido" data-estado="espera">
+                  <td><div style="font-weight:600;">Sillas Diez Fresno Cenizo — NAMUH</div><div class="mono">006987 · 62×80×45×95 · 2 pzas</div></td>
+                  <td><span class="cat-badge cat-resurtido">Resurtido</span></td>
+                  <td><span class="area-pill area-active">Espera tapicería</span></td>
+                  <td><span style="font-size:11px;color:var(--text-tertiary);">Proveedor ext.</span></td>
+                  <td><span class="badge badge-ret">Retraso</span></td>
+                  <td><span class="urgent">11 mar ⚠</span></td>
+                </tr>
+                <!-- SENDEROS -->
+                <tr data-cat="proyecto" data-estado="produccion">
+                  <td><div style="font-weight:600;">Shutters casita — Senderos</div><div class="mono">4 piezas · falta muestra de tono</div></td>
+                  <td><span class="cat-badge cat-proyecto">Proyecto</span></td>
+                  <td><span class="area-pill area-active">Terminados</span></td>
+                  <td><div class="avatar av-la">LA</div></td>
+                  <td><span class="badge badge-ret">Retraso</span></td>
+                  <td><span class="urgent">3 mar ⚠</span></td>
+                </tr>
+                <tr data-cat="proyecto" data-estado="produccion">
+                  <td><div style="font-weight:600;">Puertas interiores — Senderos</div><div class="mono">6 piezas</div></td>
+                  <td><span class="cat-badge cat-proyecto">Proyecto</span></td>
+                  <td><span class="area-pill area-active">Carpintería</span></td>
+                  <td><div class="avatar-group"><div class="avatar av-ro">RO</div><div class="avatar av-ma">MA</div></div></td>
+                  <td><span class="badge badge-prog">En producción</span></td>
+                  <td><span class="days-ok">3 jun</span></td>
+                </tr>
+                <tr data-cat="proyecto" data-estado="listo">
+                  <td><div style="font-weight:600;">Puertas exteriores — Senderos</div><div class="mono">2 piezas</div></td>
+                  <td><span class="cat-badge cat-proyecto">Proyecto</span></td>
+                  <td><span class="area-pill" style="background:var(--green-light);color:var(--green);">Lista · instalar ✓</span></td>
+                  <td><span style="font-size:11px;color:var(--text-tertiary);">—</span></td>
+                  <td><span class="badge badge-listo">Lista</span></td>
+                  <td><span class="days-ok">12 jun</span></td>
+                </tr>
+                <tr data-cat="proyecto" data-estado="produccion">
+                  <td><div style="font-weight:600;">Ventana — Senderos</div></td>
+                  <td><span class="cat-badge cat-proyecto">Proyecto</span></td>
+                  <td><span class="area-pill area-active">Carpintería</span></td>
+                  <td><div class="avatar av-ed">ED</div></td>
+                  <td><span class="badge badge-prog">En producción</span></td>
+                  <td><span class="days-ok">12 jun</span></td>
+                </tr>
+                <tr data-cat="proyecto" data-estado="produccion">
+                  <td><div style="font-weight:600;">Duela borneo piso terraza — Senderos</div><div class="mono">Instalación esta semana</div></td>
+                  <td><span class="cat-badge cat-proyecto">Proyecto</span></td>
+                  <td><span class="area-pill area-active">Carpintería</span></td>
+                  <td><div class="avatar av-le">LE</div></td>
+                  <td><span class="badge badge-prog">En producción</span></td>
+                  <td><span class="urgent">10 jun</span></td>
+                </tr>
+                <!-- PEDIDOS ESPECIALES -->
+                <tr data-cat="pedido" data-estado="produccion">
+                  <td><div style="font-weight:600;">Mesa de mármol — Alejandro Vázquez</div><div class="mono">PY-006223</div></td>
+                  <td><span class="cat-badge cat-pedido">Pedido especial</span></td>
+                  <td><span class="area-pill area-active">Terminando</span></td>
+                  <td><div class="avatar av-an">AN</div></td>
+                  <td><span class="badge badge-prog">En producción</span></td>
+                  <td><span class="days-ok">19 jun</span></td>
+                </tr>
+                <tr data-cat="pedido" data-estado="espera">
+                  <td><div style="font-weight:600;">Gabinete TV — Karina Tavarez</div><div class="mono">007003 · espera herrajes Funart</div></td>
+                  <td><span class="cat-badge cat-pedido">Pedido especial</span></td>
+                  <td><span class="area-pill area-active">Espera herrajes</span></td>
+                  <td><span style="font-size:11px;color:var(--text-tertiary);">Funart ext.</span></td>
+                  <td><span class="badge badge-ret">Retraso</span></td>
+                  <td><span class="urgent">21 may ⚠</span></td>
+                </tr>
+                <tr data-cat="pedido" data-estado="produccion">
+                  <td><div style="font-weight:600;">Mesa centro 220 — Martha Cortina</div><div class="mono">007006</div></td>
+                  <td><span class="cat-badge cat-pedido">Pedido especial</span></td>
+                  <td><span class="area-pill" style="background:var(--green-light);color:var(--green);">Entregado ✓</span></td>
+                  <td><span style="font-size:11px;color:var(--text-tertiary);">—</span></td>
+                  <td><span class="badge badge-listo">Entregado</span></td>
+                  <td><span class="days-ok">11 jun</span></td>
+                </tr>
+                <tr data-cat="pedido" data-estado="espera">
+                  <td><div style="font-weight:600;">Bufetera Lao — Minerva Cepeda</div><div class="mono">007008 · espera compra de material</div></td>
+                  <td><span class="cat-badge cat-pedido">Pedido especial</span></td>
+                  <td><span class="area-pill area-next">Sin iniciar</span></td>
+                  <td><span style="font-size:11px;color:var(--text-tertiary);">—</span></td>
+                  <td><span class="badge badge-esp">En espera</span></td>
+                  <td><span class="days-ok">3 ago</span></td>
+                </tr>
+                <!-- IVETTE BELTRAN -->
+                <tr data-cat="proyecto" data-estado="listo">
+                  <td><div style="font-weight:600;">Pedestal — Ivette Beltrán</div><div class="mono">38×38×110 · listo para empacar</div></td>
+                  <td><span class="cat-badge cat-proyecto">Proyecto</span></td>
+                  <td><span class="area-pill" style="background:var(--green-light);color:var(--green);">Empaque ✓</span></td>
+                  <td><div class="avatar av-la">LA</div></td>
+                  <td><span class="badge badge-listo">Sale hoy</span></td>
+                  <td><span class="tomorrow">Hoy</span></td>
+                </tr>
+                <tr data-cat="proyecto" data-estado="produccion">
+                  <td><div style="font-weight:600;">Cajonera — Ivette Beltrán</div><div class="mono">150×62×78 · sale de pulido hoy</div></td>
+                  <td><span class="cat-badge cat-proyecto">Proyecto</span></td>
+                  <td><span class="area-pill area-active">Terminados</span></td>
+                  <td><div class="avatar av-mo">MO</div></td>
+                  <td><span class="badge badge-prog">Entra a terminados</span></td>
+                  <td><span class="days-ok">3 jul</span></td>
+                </tr>
+                <tr data-cat="proyecto" data-estado="produccion">
+                  <td><div style="font-weight:600;">Trinche — Ivette Beltrán</div><div class="mono">350×80×90</div></td>
+                  <td><span class="cat-badge cat-proyecto">Proyecto</span></td>
+                  <td><span class="area-pill area-active">Pulido</span></td>
+                  <td><div class="avatar av-mo">MO</div></td>
+                  <td><span class="badge badge-prog">En pulido</span></td>
+                  <td><span class="days-ok">3 jul</span></td>
+                </tr>
+                <tr data-cat="proyecto" data-estado="pausa">
+                  <td><div style="font-weight:600;">Librero / Mueble TV — Ivette Beltrán</div><div class="mono">430×55×250 · pausa por duelas</div></td>
+                  <td><span class="cat-badge cat-proyecto">Proyecto</span></td>
+                  <td><span class="area-pill" style="background:var(--gray-light);color:var(--text-secondary);">Carpintería ⏸</span></td>
+                  <td><div class="avatar av-le">LE</div></td>
+                  <td><span class="badge badge-pausa">En pausa</span></td>
+                  <td><span class="days-ok">17 jul</span></td>
+                </tr>
+                <!-- EDUARDO CARRASCO -->
+                <tr data-cat="proyecto" data-estado="espera">
+                  <td><div style="font-weight:600;">Burós — Eduardo Carrasco</div><div class="mono">75×55×76 · 4 piezas · espera material</div></td>
+                  <td><span class="cat-badge cat-proyecto">Proyecto</span></td>
+                  <td><span class="area-pill area-next">Sin iniciar</span></td>
+                  <td><span style="font-size:11px;color:var(--text-tertiary);">—</span></td>
+                  <td><span class="badge badge-esp">En espera</span></td>
+                  <td><span class="days-ok">17 jul</span></td>
+                </tr>
+                <!-- NAMUH OTROS -->
+                <tr data-cat="resurtido" data-estado="espera">
+                  <td><div style="font-weight:600;">Vitrina B — Casa Palacio / NAMUH</div><div class="mono">Espera orden de producción</div></td>
+                  <td><span class="cat-badge cat-resurtido">Resurtido</span></td>
+                  <td><span class="area-pill area-next">Sin iniciar</span></td>
+                  <td><span style="font-size:11px;color:var(--text-tertiary);">—</span></td>
+                  <td><span class="badge badge-esp">En espera</span></td>
+                  <td><span class="days-ok">10 jul</span></td>
+                </tr>
+                <!-- PROTOTIPO -->
+                <tr data-cat="prototipo" data-estado="produccion">
+                  <td><div style="font-weight:600;">Lámpara Sama</div><div class="mono">Lista · falta barniz</div></td>
+                  <td><span class="cat-badge cat-prototipo">Prototipo</span></td>
+                  <td><span class="area-pill area-active">Terminados</span></td>
+                  <td><div class="avatar av-la">LA</div></td>
+                  <td><span class="badge badge-prog">Casi lista</span></td>
+                  <td><span style="font-size:11px;color:var(--text-tertiary);">—</span></td>
+                </tr>
+                <!-- ENSAMBLES -->
+                <tr data-cat="ensamble" data-estado="espera">
+                  <td><div style="font-weight:600;">Mesas chuletas (par)</div><div class="mono">Espera inicio de producción</div></td>
+                  <td><span class="cat-badge cat-ensamble">Ensamble</span></td>
+                  <td><span class="area-pill area-next">Sin iniciar</span></td>
+                  <td><span style="font-size:11px;color:var(--text-tertiary);">—</span></td>
+                  <td><span class="badge badge-esp">En espera</span></td>
+                  <td><span style="font-size:11px;color:var(--text-tertiary);">—</span></td>
+                </tr>
+                <tr data-cat="ensamble" data-estado="espera">
+                  <td><div style="font-weight:600;">Mesas chuletas — nuevos diseños</div><div class="mono">Espera inicio de producción</div></td>
+                  <td><span class="cat-badge cat-ensamble">Ensamble</span></td>
+                  <td><span class="area-pill area-next">Sin iniciar</span></td>
+                  <td><span style="font-size:11px;color:var(--text-tertiary);">—</span></td>
+                  <td><span class="badge badge-esp">En espera</span></td>
+                  <td><span style="font-size:11px;color:var(--text-tertiary);">—</span></td>
+                </tr>
+                <tr data-cat="ensamble" data-estado="espera">
+                  <td><div style="font-weight:600;">Cantina</div><div class="mono">Espera inicio de producción</div></td>
+                  <td><span class="cat-badge cat-ensamble">Ensamble</span></td>
+                  <td><span class="area-pill area-next">Sin iniciar</span></td>
+                  <td><span style="font-size:11px;color:var(--text-tertiary);">—</span></td>
+                  <td><span class="badge badge-esp">En espera</span></td>
+                  <td><span style="font-size:11px;color:var(--text-tertiary);">—</span></td>
+                </tr>
+                <tr data-cat="ensamble" data-estado="espera">
+                  <td><div style="font-weight:600;">Barra Siddharta</div><div class="mono">Espera inicio de producción</div></td>
+                  <td><span class="cat-badge cat-ensamble">Ensamble</span></td>
+                  <td><span class="area-pill area-next">Sin iniciar</span></td>
+                  <td><span style="font-size:11px;color:var(--text-tertiary);">—</span></td>
+                  <td><span class="badge badge-esp">En espera</span></td>
+                  <td><span style="font-size:11px;color:var(--text-tertiary);">—</span></td>
+                </tr>
+                <tr data-cat="ensamble" data-estado="espera">
+                  <td><div style="font-weight:600;">Consola</div><div class="mono">Espera inicio de producción</div></td>
+                  <td><span class="cat-badge cat-ensamble">Ensamble</span></td>
+                  <td><span class="area-pill area-next">Sin iniciar</span></td>
+                  <td><span style="font-size:11px;color:var(--text-tertiary);">—</span></td>
+                  <td><span class="badge badge-esp">En espera</span></td>
+                  <td><span style="font-size:11px;color:var(--text-tertiary);">—</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════════ PERSONAL ═══════════ -->
+      <div id="view-personal" class="view">
+        <div class="people-grid">
+
+          <div class="person-card" style="border-color:var(--accent-light);">
+            <div class="person-header">
+              <div class="person-avatar av-an" style="width:40px;height:40px;font-size:14px;">AN</div>
+              <div>
+                <div class="person-name">Antonio</div>
+                <div class="person-role">Jefe de carpintería</div>
+              </div>
+            </div>
+            <hr class="person-divider">
+            <div class="person-stat"><span class="person-stat-label">Proyecto actual</span><span class="person-stat-value">Mesa mármol — Vázquez</span></div>
+            <div class="person-stat"><span class="person-stat-label">Área</span><span class="person-stat-value">Terminando</span></div>
+            <div class="person-stat"><span class="person-stat-label">Estado</span><span><span class="badge badge-prog">Activo</span></span></div>
+          </div>
+
+          <div class="person-card">
+            <div class="person-header">
+              <div class="person-avatar av-ro" style="width:40px;height:40px;font-size:14px;">RO</div>
+              <div>
+                <div class="person-name">Roberto</div>
+                <div class="person-role">Carpintero</div>
+              </div>
+            </div>
+            <hr class="person-divider">
+            <div class="person-stat"><span class="person-stat-label">Proyecto actual</span><span class="person-stat-value">Puertas int. — Senderos</span></div>
+            <div class="person-stat"><span class="person-stat-label">Área</span><span class="person-stat-value">Carpintería</span></div>
+            <div class="person-stat"><span class="person-stat-label">Estado</span><span><span class="badge badge-prog">Activo</span></span></div>
+          </div>
+
+          <div class="person-card">
+            <div class="person-header">
+              <div class="person-avatar av-ma" style="width:40px;height:40px;font-size:14px;">MA</div>
+              <div>
+                <div class="person-name">Mario</div>
+                <div class="person-role">Carpintero</div>
+              </div>
+            </div>
+            <hr class="person-divider">
+            <div class="person-stat"><span class="person-stat-label">Proyecto actual</span><span class="person-stat-value">Puertas int. — Senderos</span></div>
+            <div class="person-stat"><span class="person-stat-label">Área</span><span class="person-stat-value">Carpintería</span></div>
+            <div class="person-stat"><span class="person-stat-label">Estado</span><span><span class="badge badge-prog">Activo</span></span></div>
+          </div>
+
+          <div class="person-card">
+            <div class="person-header">
+              <div class="person-avatar av-le" style="width:40px;height:40px;font-size:14px;">LE</div>
+              <div>
+                <div class="person-name">Leonardo</div>
+                <div class="person-role">Carpintero</div>
+              </div>
+            </div>
+            <hr class="person-divider">
+            <div class="person-stat"><span class="person-stat-label">Proyecto actual</span><span class="person-stat-value">Duela borneo — Senderos</span></div>
+            <div class="person-stat"><span class="person-stat-label">Área</span><span class="person-stat-value">Carpintería</span></div>
+            <div class="person-stat"><span class="person-stat-label">Nota</span><span style="font-size:11px;color:var(--text-secondary);">Librero Beltrán en pausa</span></div>
+          </div>
+
+          <div class="person-card">
+            <div class="person-header">
+              <div class="person-avatar av-ed" style="width:40px;height:40px;font-size:14px;">ED</div>
+              <div>
+                <div class="person-name">Eduardo</div>
+                <div class="person-role">Carpintero</div>
+              </div>
+            </div>
+            <hr class="person-divider">
+            <div class="person-stat"><span class="person-stat-label">Proyecto actual</span><span class="person-stat-value">Ventana — Senderos</span></div>
+            <div class="person-stat"><span class="person-stat-label">Área</span><span class="person-stat-value">Carpintería</span></div>
+            <div class="person-stat"><span class="person-stat-label">Estado</span><span><span class="badge badge-prog">Activo</span></span></div>
+          </div>
+
+          <div class="person-card">
+            <div class="person-header">
+              <div class="person-avatar av-mo" style="width:40px;height:40px;font-size:14px;">MO</div>
+              <div>
+                <div class="person-name">Mónica</div>
+                <div class="person-role">Pulidora</div>
+              </div>
+            </div>
+            <hr class="person-divider">
+            <div class="person-stat"><span class="person-stat-label">Proyecto actual</span><span class="person-stat-value">Trinche + Cajonera — Beltrán</span></div>
+            <div class="person-stat"><span class="person-stat-label">Área</span><span class="person-stat-value">Pulido</span></div>
+            <div class="person-stat"><span class="person-stat-label">Estado</span><span><span class="badge badge-prog">Activo</span></span></div>
+          </div>
+
+          <div class="person-card">
+            <div class="person-header">
+              <div class="person-avatar av-la" style="width:40px;height:40px;font-size:14px;">LA</div>
+              <div>
+                <div class="person-name">Luis Ángel</div>
+                <div class="person-role">Terminados</div>
+              </div>
+            </div>
+            <hr class="person-divider">
+            <div class="person-stat"><span class="person-stat-label">Proyecto actual</span><span class="person-stat-value">Pedestal · Lámpara Sama</span></div>
+            <div class="person-stat"><span class="person-stat-label">Área</span><span class="person-stat-value">Terminados</span></div>
+            <div class="person-stat"><span class="person-stat-label">Pendiente</span><span style="font-size:11px;color:var(--red);">Muestra tono shutters</span></div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ═══════════ HORAS ═══════════ -->
+      <div id="view-horas" class="view">
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Registro de horas</span>
+            <input type="date" value="2026-06-09" style="width:auto;font-size:13px;">
+          </div>
+          <div class="card-body">
+            <div class="hours-form">
+              <div class="hours-row">
+                <div class="hours-person"><div class="avatar av-an">AN</div> Antonio</div>
+                <select>
+                  <option>Mesa mármol — Alejandro Vázquez</option>
+                  <option>Puertas int. — Senderos</option>
+                  <option>Duela borneo — Senderos</option>
+                </select>
+                <input type="number" min="0" max="12" step="0.5" value="8" style="text-align:center;">
+                <input type="text" placeholder="Nota opcional...">
+              </div>
+              <div class="hours-row">
+                <div class="hours-person"><div class="avatar av-ro">RO</div> Roberto</div>
+                <select>
+                  <option>Puertas int. — Senderos</option>
+                  <option>Mesa mármol — Alejandro Vázquez</option>
+                  <option>Ventana — Senderos</option>
+                </select>
+                <input type="number" min="0" max="12" step="0.5" value="8" style="text-align:center;">
+                <input type="text" placeholder="Nota opcional...">
+              </div>
+              <div class="hours-row">
+                <div class="hours-person"><div class="avatar av-ma">MA</div> Mario</div>
+                <select>
+                  <option>Puertas int. — Senderos</option>
+                  <option>Mesa mármol — Alejandro Vázquez</option>
+                  <option>Ventana — Senderos</option>
+                </select>
+                <input type="number" min="0" max="12" step="0.5" value="8" style="text-align:center;">
+                <input type="text" placeholder="Nota opcional...">
+              </div>
+              <div class="hours-row">
+                <div class="hours-person"><div class="avatar av-le">LE</div> Leonardo</div>
+                <select>
+                  <option>Duela borneo — Senderos</option>
+                  <option>Librero/TV — I. Beltrán</option>
+                  <option>Puertas int. — Senderos</option>
+                </select>
+                <input type="number" min="0" max="12" step="0.5" value="8" style="text-align:center;">
+                <input type="text" placeholder="Nota opcional...">
+              </div>
+              <div class="hours-row">
+                <div class="hours-person"><div class="avatar av-ed">ED</div> Eduardo</div>
+                <select>
+                  <option>Ventana — Senderos</option>
+                  <option>Puertas int. — Senderos</option>
+                  <option>Duela borneo — Senderos</option>
+                </select>
+                <input type="number" min="0" max="12" step="0.5" value="8" style="text-align:center;">
+                <input type="text" placeholder="Nota opcional...">
+              </div>
+              <div class="hours-row">
+                <div class="hours-person"><div class="avatar av-mo">MO</div> Mónica</div>
+                <select>
+                  <option>Trinche — I. Beltrán</option>
+                  <option>Cajonera — I. Beltrán</option>
+                </select>
+                <input type="number" min="0" max="12" step="0.5" value="8" style="text-align:center;">
+                <input type="text" placeholder="Nota opcional...">
+              </div>
+              <div class="hours-row">
+                <div class="hours-person"><div class="avatar av-la">LA</div> Luis Ángel</div>
+                <select>
+                  <option>Pedestal — I. Beltrán</option>
+                  <option>Lámpara Sama</option>
+                  <option>Cajonera — I. Beltrán</option>
+                  <option>Shutters — Senderos</option>
+                </select>
+                <input type="number" min="0" max="12" step="0.5" value="8" style="text-align:center;">
+                <input type="text" placeholder="Nota opcional...">
+              </div>
+            </div>
+          </div>
+          <div style="padding:14px 18px;border-top:1px solid var(--border-soft);display:flex;justify-content:space-between;align-items:center;">
+            <span style="font-size:12px;color:var(--text-secondary);">Total del día: <strong>56h</strong> en 7 personas</span>
+            <div style="display:flex;gap:8px;">
+              <button class="btn">Turno partido</button>
+              <button class="btn btn-primary">Guardar registro</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════════ MATERIALES ═══════════ -->
+      <div id="view-materiales" class="view">
+        <div class="filter-bar">
+          <button class="filter-btn active" onclick="filterMat('todos', this)">Stock general</button>
+          <button class="filter-btn" onclick="filterMat('proyecto', this)">Por proyecto</button>
+        </div>
+
+        <div id="mat-general">
+          <div class="stats-grid" style="grid-template-columns:repeat(4,1fr);">
+            <div class="stat-card"><div class="stat-label">Total materiales</div><div class="stat-value">—</div></div>
+            <div class="stat-card success"><div class="stat-label">Suficiente</div><div class="stat-value">—</div></div>
+            <div class="stat-card warn"><div class="stat-label">Stock bajo</div><div class="stat-value">—</div></div>
+            <div class="stat-card danger"><div class="stat-label">Agotados</div><div class="stat-value">—</div></div>
+          </div>
+          <div class="card" style="margin-top:16px;">
+            <div class="card-header">
+              <span class="card-title">Existencias físicas</span>
+              <button class="btn btn-primary">+ Agregar material</button>
+            </div>
+            <div class="empty">
+              <div style="font-size:32px;margin-bottom:12px;">📦</div>
+              <div style="font-weight:600;color:var(--text-secondary);margin-bottom:6px;">Sin materiales registrados todavía</div>
+              <div>Agrega los materiales del taller para llevar el control de inventario</div>
+            </div>
+          </div>
+        </div>
+
+        <div id="mat-proyecto" style="display:none;">
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">Materiales por proyecto</span>
+              <select style="width:auto;font-size:13px;">
+                <option>Seleccionar proyecto...</option>
+                <option>Senderos — Puertas interiores</option>
+                <option>Mesa mármol — A. Vázquez</option>
+                <option>Cajonera — I. Beltrán</option>
+              </select>
+            </div>
+            <div class="empty">
+              <div style="font-size:32px;margin-bottom:12px;">🗂</div>
+              <div style="font-weight:600;color:var(--text-secondary);margin-bottom:6px;">Selecciona un proyecto para ver sus materiales</div>
+              <div>Aquí verás qué materiales necesita cada pieza y cuánto hay disponible</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════════ REQUISICIONES ═══════════ -->
+      <div id="view-requisiciones" class="view">
+
+        <div style="display:grid;grid-template-columns:1fr 1.2fr;gap:16px;">
+
+          <!-- FORMULARIO -->
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">Nueva requisición</span>
+            </div>
+            <div class="card-body-pad" style="display:flex;flex-direction:column;gap:14px;">
+
+              <div>
+                <label style="font-size:11px;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:5px;">Proyecto</label>
+                <select id="req-proyecto" style="width:100%;">
+                  <option value="">Seleccionar proyecto...</option>
+                  <optgroup label="Resurtido NAMUH">
+                    <option>Sillas Diez — 006583 + 006987</option>
+                  </optgroup>
+                  <optgroup label="Proyecto Senderos">
+                    <option>Senderos — Puertas interiores</option>
+                    <option>Senderos — Puertas exteriores</option>
+                    <option>Senderos — Ventana</option>
+                    <option>Senderos — Duela borneo terraza</option>
+                    <option>Senderos — Shutters casita</option>
+                  </optgroup>
+                  <optgroup label="Pedidos especiales">
+                    <option>Mesa mármol — A. Vázquez</option>
+                    <option>Gabinete TV — K. Tavarez</option>
+                    <option>Bufetera Lao — M. Cepeda</option>
+                  </optgroup>
+                  <optgroup label="Proyecto Ivette Beltrán">
+                    <option>Beltrán — Trinche</option>
+                    <option>Beltrán — Librero / TV</option>
+                    <option>Beltrán — Cajonera</option>
+                    <option>Beltrán — Pedestal</option>
+                  </optgroup>
+                  <optgroup label="Proyecto E. Carrasco">
+                    <option>Burós — Eduardo Carrasco</option>
+                  </optgroup>
+                  <optgroup label="Otros NAMUH">
+                    <option>Vitrina B — Casa Palacio</option>
+                  </optgroup>
+                  <optgroup label="Ensambles">
+                    <option>Mesas chuletas (par)</option>
+                    <option>Mesas chuletas nuevos diseños</option>
+                    <option>Cantina</option>
+                    <option>Barra Siddharta</option>
+                    <option>Consola</option>
+                  </optgroup>
+                  <optgroup label="Prototipos">
+                    <option>Lámpara Sama</option>
+                  </optgroup>
+                  <option>— General / sin proyecto específico</option>
+                </select>
+              </div>
+
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                <div>
+                  <label style="font-size:11px;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:5px;">Quien solicita</label>
+                  <select id="req-persona" style="width:100%;">
+                    <option value="">Seleccionar...</option>
+                    <option>Antonio</option>
+                    <option>Roberto</option>
+                    <option>Mario</option>
+                    <option>Leonardo</option>
+                    <option>Eduardo</option>
+                    <option>Mónica</option>
+                    <option>Luis Ángel</option>
+                  </select>
+                </div>
+                <div>
+                  <label style="font-size:11px;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:5px;">Fecha</label>
+                  <input type="date" id="req-fecha" style="width:100%;">
+                </div>
+              </div>
+
+              <div>
+                <label style="font-size:11px;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:5px;">Material y cantidad</label>
+                <div id="req-materiales-list" style="display:flex;flex-direction:column;gap:6px;">
+                  <div class="req-mat-row" style="display:grid;grid-template-columns:1fr 80px 70px auto;gap:6px;align-items:center;">
+                    <input type="text" placeholder="Nombre del material" style="width:100%;">
+                    <input type="number" placeholder="Cant." min="0" step="0.5" style="width:100%;text-align:center;">
+                    <input type="text" placeholder="Unidad" style="width:100%;">
+                    <button onclick="addMatRow()" style="width:28px;height:28px;border-radius:50%;border:1px solid var(--border);background:var(--surface);cursor:pointer;font-size:16px;line-height:1;color:var(--text-secondary);">+</button>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <label style="font-size:11px;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:5px;">Proveedor sugerido</label>
+                <input type="text" id="req-proveedor" placeholder="ej. Funart, Maderas del Norte, Ferretería..." style="width:100%;">
+              </div>
+
+              <div>
+                <label style="font-size:11px;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:8px;">Nivel de urgencia</label>
+                <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;" id="req-urgencia">
+                  <label onclick="selectUrgencia('rutinaria')" id="urg-rutinaria" style="cursor:pointer;border:1px solid var(--border);border-radius:var(--radius);padding:10px 8px;text-align:center;transition:all .15s;">
+                    <div style="font-size:18px;margin-bottom:4px;">📅</div>
+                    <div style="font-size:11px;font-weight:600;color:var(--text-secondary);">Rutinaria</div>
+                    <div style="font-size:10px;color:var(--text-tertiary);margin-top:2px;">Próxima revisión</div>
+                  </label>
+                  <label onclick="selectUrgencia('pronto')" id="urg-pronto" style="cursor:pointer;border:1px solid var(--border);border-radius:var(--radius);padding:10px 8px;text-align:center;transition:all .15s;">
+                    <div style="font-size:18px;margin-bottom:4px;">⚡</div>
+                    <div style="font-size:11px;font-weight:600;color:var(--text-secondary);">Pronto</div>
+                    <div style="font-size:10px;color:var(--text-tertiary);margin-top:2px;">Esta semana</div>
+                  </label>
+                  <label onclick="selectUrgencia('urgente')" id="urg-urgente" style="cursor:pointer;border:1px solid var(--border);border-radius:var(--radius);padding:10px 8px;text-align:center;transition:all .15s;">
+                    <div style="font-size:18px;margin-bottom:4px;">🔴</div>
+                    <div style="font-size:11px;font-weight:600;color:var(--text-secondary);">Urgente</div>
+                    <div style="font-size:10px;color:var(--text-tertiary);margin-top:2px;">Bloquea producción</div>
+                  </label>
+                </div>
+              </div>
+
+              <div>
+                <label style="font-size:11px;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:5px;">Notas / especificaciones</label>
+                <textarea id="req-notas" placeholder="Medidas exactas, acabado, calidad, color, referencia de catálogo..." style="width:100%;min-height:72px;font-size:13px;padding:8px 10px;border-radius:var(--radius);border:1px solid var(--border);background:var(--surface);color:var(--text);font-family:inherit;resize:vertical;line-height:1.5;"></textarea>
+              </div>
+
+              <div style="display:flex;justify-content:flex-end;gap:8px;padding-top:4px;border-top:1px solid var(--border-soft);">
+                <button class="btn" onclick="limpiarReq()">Limpiar</button>
+                <button class="btn btn-primary" onclick="guardarReq()">Guardar requisición</button>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- HISTORIAL -->
+          <div style="display:flex;flex-direction:column;gap:14px;">
+
+            <div class="card">
+              <div class="card-header">
+                <span class="card-title">Requisiciones registradas</span>
+                <div style="display:flex;gap:6px;">
+                  <button class="filter-btn active" style="font-size:11px;padding:4px 10px;" onclick="filtrarReqs('todas',this)">Todas</button>
+                  <button class="filter-btn" style="font-size:11px;padding:4px 10px;" onclick="filtrarReqs('urgente',this)">Urgentes</button>
+                  <button class="filter-btn" style="font-size:11px;padding:4px 10px;" onclick="filtrarReqs('pendiente',this)">Pendientes</button>
+                  <button class="filter-btn" style="font-size:11px;padding:4px 10px;" onclick="filtrarReqs('comprado',this)">Compradas</button>
+                </div>
+              </div>
+              <div id="req-historial">
+                <div class="empty">
+                  <div style="font-size:32px;margin-bottom:10px;">📋</div>
+                  <div style="font-weight:600;color:var(--text-secondary);margin-bottom:4px;">Sin requisiciones todavía</div>
+                  <div style="font-size:12px;">Las requisiciones que guardes aparecerán aquí</div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════════ CRONOGRAMA ═══════════ -->
+      <div id="view-cronograma" class="view">
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Cronograma de producción — 2026</span>
+            <div style="display:flex;gap:16px;flex-wrap:wrap;font-size:12px;color:var(--text-secondary);">
+              <span style="display:flex;align-items:center;gap:5px;"><span style="width:10px;height:10px;border-radius:2px;background:#B8916A;display:inline-block;"></span>En curso</span>
+              <span style="display:flex;align-items:center;gap:5px;"><span style="width:10px;height:10px;border-radius:2px;background:#E24B4A;opacity:.6;display:inline-block;"></span>Retraso</span>
+              <span style="display:flex;align-items:center;gap:5px;"><span style="width:10px;height:10px;border-radius:2px;background:#639922;opacity:.4;display:inline-block;"></span>Rango estimado</span>
+              <span style="display:flex;align-items:center;gap:5px;"><span style="width:2px;height:10px;border-radius:1px;background:#E24B4A;display:inline-block;"></span>Hoy</span>
+            </div>
+          </div>
+          <div class="card-body" style="overflow-x:auto;">
+            <div id="gantt-root" style="min-width:700px;"></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<script>
+(function(){
+  const TODAY = new Date(); TODAY.setHours(0,0,0,0);
+  const ORIGIN = new Date('2025-12-29');
+  const TOTAL_WEEKS = 36;
+  const WEEK_MS = 7*24*3600*1000;
+  function weeksFrom(d){ return (d-ORIGIN)/WEEK_MS; }
+  function todayPct(){ return Math.min(100,Math.max(0,weeksFrom(TODAY)/TOTAL_WEEKS*100)); }
+  function weekLabel(w){ const d=new Date(ORIGIN.getTime()+w*WEEK_MS); return (d.getMonth()+1)+'/'+(d.getDate()); }
+
+  const STATUS_COLOR={prog:'#B8916A',ret:'#E24B4A',listo:'#639922',esp:'#A8A49E',pausa:'#A8A49E'};
+  const CAT_LABELS={r:'Resurtido',p:'Proyecto',pe:'Pedido especial',e:'Ensamble',pr:'Prototipo'};
+  const CAT_CSS={r:'cat-resurtido',p:'cat-proyecto',pe:'cat-pedido',e:'cat-ensamble',pr:'cat-prototipo'};
+
+  const projects=[
+    {section:'Resurtido NAMUH'},
+    {name:'Sillas Diez (4 pzas)',sub:'006583+006987',cat:'r',start:'2026-01-14',weeks:[8,8],status:'ret',note:'Espera tapicería'},
+    {section:'Proyecto Senderos'},
+    {name:'Shutters casita',sub:'4 pzas · falta muestra tono',cat:'p',start:'2026-01-06',weeks:[8,8],status:'ret',note:'Falta muestra'},
+    {name:'Puertas interiores',sub:'6 pzas · Roberto + Mario',cat:'p',start:null,weeks:null,status:'prog'},
+    {name:'Puertas exteriores',sub:'Listas para instalar',cat:'p',start:null,weeks:null,status:'listo'},
+    {name:'Ventana',sub:'Eduardo',cat:'p',start:'2026-06-08',weeks:[1,1],status:'prog'},
+    {name:'Duela borneo terraza',sub:'Leonardo · esta semana',cat:'p',start:'2026-06-08',weeks:[1,1],status:'prog'},
+    {section:'Pedidos especiales'},
+    {name:'Mesa mármol — A. Vázquez',sub:'PY-006223',cat:'pe',start:'2026-04-27',weeks:[6,6],status:'prog'},
+    {name:'Gabinete TV — K. Tavarez',sub:'007003 · espera Funart',cat:'pe',start:'2026-03-12',weeks:[10,12],status:'ret',note:'Espera herrajes'},
+    {name:'Mesa centro — M. Cortina',sub:'007006 · entregado',cat:'pe',start:'2026-04-30',weeks:[4,6],status:'listo'},
+    {name:'Bufetera Lao — M. Cepeda',sub:'007008',cat:'pe',start:'2026-06-08',weeks:[6,8],status:'esp'},
+    {section:'Proyecto Ivette Beltrán'},
+    {name:'Pedestal',sub:'38×38×110 · empaque hoy',cat:'p',start:'2026-05-08',weeks:[4,6],status:'listo'},
+    {name:'Cajonera',sub:'150×62×78 · entra terminados',cat:'p',start:'2026-05-08',weeks:[6,8],status:'prog'},
+    {name:'Trinche',sub:'350×80×90 · en pulido',cat:'p',start:'2026-05-08',weeks:[6,8],status:'prog'},
+    {name:'Librero / TV',sub:'430×55×250 · en pausa',cat:'p',start:'2026-05-08',weeks:[8,10],status:'pausa'},
+    {section:'Proyecto E. Carrasco'},
+    {name:'Burós (4 pzas)',sub:'75×55×76 · espera material',cat:'p',start:'2026-06-01',weeks:[4,6],status:'esp'},
+    {section:'Otros NAMUH'},
+    {name:'Vitrina B — Casa Palacio',sub:'Espera orden de producción',cat:'r',start:null,weeks:[1,1],status:'esp'},
+    {section:'Prototipos'},
+    {name:'Lámpara Sama',sub:'Falta barniz · Luis Ángel',cat:'pr',start:null,weeks:null,status:'prog'},
+    {section:'Ensambles'},
+    {name:'Mesas chuletas (par)',sub:'Diseño pendiente',cat:'e',start:null,weeks:[4,6],status:'esp'},
+    {name:'Mesas chuletas nuevos diseños',sub:'Diseño pendiente',cat:'e',start:null,weeks:[4,6],status:'esp'},
+    {name:'Cantina',sub:'Sin fecha de entrada',cat:'e',start:null,weeks:[4,6],status:'esp'},
+    {name:'Barra Siddharta',sub:'Sin fecha de entrada',cat:'e',start:null,weeks:[4,6],status:'esp'},
+    {name:'Consola',sub:'Sin fecha de entrada',cat:'e',start:null,weeks:[4,6],status:'esp'},
+  ];
+
+  function statusLabel(s,note){ const m={prog:'En curso',ret:'Retraso',listo:'Listo',esp:'En espera',pausa:'En pausa'}; return note||m[s]||s; }
+
+  // Meses visibles: ene 2026 – ago 2026 (8 meses)
+  const MONTHS = [
+    {label:'Ene',start:new Date('2026-01-01'),end:new Date('2026-02-01')},
+    {label:'Feb',start:new Date('2026-02-01'),end:new Date('2026-03-01')},
+    {label:'Mar',start:new Date('2026-03-01'),end:new Date('2026-04-01')},
+    {label:'Abr',start:new Date('2026-04-01'),end:new Date('2026-05-01')},
+    {label:'May',start:new Date('2026-05-01'),end:new Date('2026-06-01')},
+    {label:'Jun',start:new Date('2026-06-01'),end:new Date('2026-07-01')},
+    {label:'Jul',start:new Date('2026-07-01'),end:new Date('2026-08-01')},
+    {label:'Ago',start:new Date('2026-08-01'),end:new Date('2026-09-01')},
+  ];
+  const RANGE_START = MONTHS[0].start;
+  const RANGE_END   = MONTHS[MONTHS.length-1].end;
+  const RANGE_MS    = RANGE_END - RANGE_START;
+
+  function datePct(d){ return Math.min(100,Math.max(0,(d-RANGE_START)/RANGE_MS*100)); }
+  function todayPctNew(){ return datePct(TODAY); }
+
+  // Estado de expansión por mes
+  const expandedMonths = {};
+
+  function weeksOfMonth(mo){
+    const weeks=[];
+    let cur=new Date(mo.start);
+    while(cur < mo.end){
+      const wEnd=new Date(Math.min(new Date(cur.getTime()+WEEK_MS), mo.end));
+      weeks.push({start:new Date(cur), end:wEnd});
+      cur=wEnd;
+    }
+    return weeks;
+  }
+
+  function buildGantt(){
+    const tp=todayPctNew();
+
+    let html='<table style="width:100%;border-collapse:collapse;font-size:12px;table-layout:fixed;">';
+    html+='<colgroup><col style="width:175px"><col style="width:75px"><col><col style="width:90px"></colgroup>';
+
+    // HEADER — fila de meses
+    html+='<thead>';
+    html+='<tr style="background:var(--bg);">';
+    html+='<th style="padding:6px 12px;text-align:left;font-size:10px;font-weight:600;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:.04em;border-bottom:1px solid var(--border-soft);">Proyecto</th>';
+    html+='<th style="padding:6px 8px;text-align:left;font-size:10px;font-weight:600;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:.04em;border-bottom:1px solid var(--border-soft);">Categoría</th>';
+    html+='<th style="padding:0;border-bottom:1px solid var(--border-soft);">';
+    html+='<div style="display:flex;position:relative;">';
+    MONTHS.forEach((mo,i)=>{
+      const isExp=expandedMonths[i];
+      const weeks=weeksOfMonth(mo);
+      const flex=isExp?weeks.length:1;
+      const isToday=TODAY>=mo.start&&TODAY<mo.end;
+      html+=`<div onclick="toggleMonth(${i})" style="flex:${flex};cursor:pointer;text-align:center;padding:5px 2px;font-size:10px;font-weight:600;border-right:1px solid var(--border-soft);color:${isToday?'#8B5E3C':'var(--text-secondary)'};background:${isToday?'#F0E6DC':'transparent'};user-select:none;white-space:nowrap;" title="Clic para ${isExp?'contraer':'expandir'} semanas">`;
+      if(isExp){
+        // mostrar semanas
+        html+=`<div style="display:flex;">`;
+        weeks.forEach((wk,wi)=>{
+          const d=wk.start;
+          const lbl=(d.getDate())+'/'+(d.getMonth()+1);
+          html+=`<div style="flex:1;text-align:center;font-size:9px;color:var(--text-tertiary);padding:2px 0;border-right:1px dashed var(--border-soft);">${lbl}</div>`;
+        });
+        html+=`</div>`;
+        html+=`<div style="font-size:9px;color:#8B5E3C;margin-top:1px;">${mo.label} ▴</div>`;
+      } else {
+        html+=`${mo.label}${isToday?' ●':''}`;
+      }
+      html+=`</div>`;
+    });
+    html+='</div></th>';
+    html+='<th style="padding:6px 8px;text-align:left;font-size:10px;font-weight:600;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:.04em;border-bottom:1px solid var(--border-soft);">Estado</th>';
+    html+='</tr></thead><tbody>';
+
+    projects.forEach(p=>{
+      if(p.section){
+        html+=`<tr><td colspan="4" style="padding:7px 12px;font-size:10px;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.05em;background:var(--bg);border-bottom:1px solid var(--border-soft);">${p.section}</td></tr>`;
+        return;
+      }
+      const color=STATUS_COLOR[p.status]||'#888';
+      const catCls=CAT_CSS[p.cat]||'';
+
+      // construir barra SVG sobre grid de meses/semanas
+      let barHTML='<div style="display:flex;position:relative;height:26px;">';
+      MONTHS.forEach((mo,i)=>{
+        const isExp=expandedMonths[i];
+        const weeks=weeksOfMonth(mo);
+        const flex=isExp?weeks.length:1;
+        barHTML+=`<div style="flex:${flex};position:relative;border-right:1px solid var(--border-soft);height:100%;">`;
+
+        // línea de hoy dentro de este mes
+        if(TODAY>=mo.start && TODAY<mo.end){
+          const withinPct=datePct(TODAY);
+          const moPct=(TODAY-mo.start)/(mo.end-mo.start)*100;
+          if(isExp){
+            // calcular en qué semana cae
+            weeks.forEach((wk,wi)=>{
+              if(TODAY>=wk.start && TODAY<wk.end){
+                const wPct=(TODAY-wk.start)/(wk.end-wk.start)*100;
+                barHTML+=`<div style="position:absolute;top:0;bottom:0;left:calc(${wi}/${weeks.length}*100% + ${wPct}/${weeks.length}%);width:1.5px;background:#E24B4A;z-index:10;"></div>`;
+              }
+            });
+          } else {
+            barHTML+=`<div style="position:absolute;top:0;bottom:0;left:${moPct}%;width:1.5px;background:#E24B4A;z-index:10;"></div>`;
+          }
+        }
+
+        if(p.start && p.weeks){
+          const startD=new Date(p.start);
+          const maxE=new Date(startD.getTime()+p.weeks[1]*WEEK_MS);
+          const minE=new Date(startD.getTime()+p.weeks[0]*WEEK_MS);
+          const isOver=p.status==='ret'||(TODAY>maxE);
+
+          // rango del mes actual
+          const mS=mo.start, mE=mo.end;
+          const barS=new Date(Math.max(startD,mS));
+          const barE=new Date(Math.min(maxE,mE));
+          const fillE=new Date(Math.min(TODAY,maxE,mE));
+          const fillS=new Date(Math.max(startD,mS));
+
+          if(barS<mE && barE>mS){
+            const mDur=mE-mS;
+            const rL=(barS-mS)/mDur*100;
+            const rW=(barE-barS)/mDur*100;
+            const fL=(fillS-mS)/mDur*100;
+            const fW=Math.max(0,(fillE-fillS)/mDur*100);
+            barHTML+=`<div style="position:absolute;top:6px;height:14px;left:${rL}%;width:${rW}%;border-radius:3px;background:${isOver?'#E24B4A':'#639922'};opacity:.3;"></div>`;
+            if(fW>0) barHTML+=`<div style="position:absolute;top:6px;height:14px;left:${fL}%;width:${fW}%;border-radius:3px;background:${isOver?'#E24B4A':'#B8916A'};"></div>`;
+          }
+        }
+        barHTML+='</div>';
+      });
+
+      if(!p.start || !p.weeks){
+        // sin fecha: texto sobre el grid
+        barHTML+=`<div style="position:absolute;top:6px;left:8px;font-size:10px;color:var(--text-tertiary);font-style:italic;pointer-events:none;">sin fecha definida</div>`;
+      }
+      barHTML+='</div>';
+
+      html+=`<tr style="border-bottom:1px solid var(--border-soft);" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''">
+        <td style="padding:6px 12px;">
+          <div style="font-weight:600;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${p.name}</div>
+          <div style="font-size:10px;color:var(--text-tertiary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${p.sub||''}</div>
+        </td>
+        <td style="padding:6px 8px;"><span class="cat-badge ${catCls}" style="font-size:9px;">${CAT_LABELS[p.cat]||''}</span></td>
+        <td style="padding:3px 0;">${barHTML}</td>
+        <td style="padding:6px 8px;font-size:10px;font-weight:500;color:${color};white-space:nowrap;">
+          <span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:${color};margin-right:4px;vertical-align:middle;"></span>${statusLabel(p.status,p.note)}
+        </td>
+      </tr>`;
+    });
+
+    html+='</tbody></table>';
+    const el=document.getElementById('gantt-root');
+    if(el) el.innerHTML=html;
+  }
+
+  window.toggleMonth = function(i){
+    expandedMonths[i] = !expandedMonths[i];
+    buildGantt();
+  };
+
+  document.addEventListener('DOMContentLoaded', buildGantt);
+  const origShow=window.showView;
+  window.showView=function(id){ if(typeof origShow==='function') origShow(id); if(id==='cronograma') buildGantt(); };
+})();
+</script>
+
+<script>
+  (function(){
+    const d = new Date();
+    const dias = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+    const meses = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+    const txt = dias[d.getDay()] + ' ' + d.getDate() + ' de ' + meses[d.getMonth()] + ', ' + d.getFullYear();
+    document.getElementById('topbar-date').textContent = txt;
+  })();
+
+  // ── REQUISICIONES ──────────────────────────────────────────
+  let reqUrgencia = '';
+  let requisiciones = [];
+
+  // Fecha de hoy en el campo fecha al abrir
+  document.addEventListener('DOMContentLoaded', function(){
+    const f = document.getElementById('req-fecha');
+    if(f){ const d=new Date(); f.value=d.toISOString().split('T')[0]; }
+  });
+
+  window.selectUrgencia = function(val){
+    reqUrgencia = val;
+    ['rutinaria','pronto','urgente'].forEach(u=>{
+      const el = document.getElementById('urg-'+u);
+      if(!el) return;
+      if(u===val){
+        el.style.borderColor = u==='urgente'?'#9B2226': u==='pronto'?'#7D5A00':'#2D6A4F';
+        el.style.background  = u==='urgente'?'#F8DEDE': u==='pronto'?'#FFF0C2':'#D8EFE4';
+      } else {
+        el.style.borderColor = 'var(--border)';
+        el.style.background  = 'transparent';
+      }
+    });
+  };
+
+  window.addMatRow = function(){
+    const list = document.getElementById('req-materiales-list');
+    const row = document.createElement('div');
+    row.className = 'req-mat-row';
+    row.style.cssText = 'display:grid;grid-template-columns:1fr 80px 70px auto;gap:6px;align-items:center;';
+    row.innerHTML = `<input type="text" placeholder="Nombre del material" style="width:100%;">
+      <input type="number" placeholder="Cant." min="0" step="0.5" style="width:100%;text-align:center;">
+      <input type="text" placeholder="Unidad" style="width:100%;">
+      <button onclick="this.parentElement.remove()" style="width:28px;height:28px;border-radius:50%;border:1px solid var(--border);background:var(--surface);cursor:pointer;font-size:16px;line-height:1;color:var(--red);">×</button>`;
+    list.appendChild(row);
+  };
+
+  window.guardarReq = function(){
+    const proyecto = document.getElementById('req-proyecto').value;
+    const persona  = document.getElementById('req-persona').value;
+    const fecha    = document.getElementById('req-fecha').value;
+    const proveedor= document.getElementById('req-proveedor').value;
+    const notas    = document.getElementById('req-notas').value;
+
+    if(!proyecto || !persona || !fecha || !reqUrgencia){
+      alert('Por favor completa: proyecto, persona, fecha y nivel de urgencia.');
+      return;
+    }
+
+    const mats = [];
+    document.querySelectorAll('.req-mat-row').forEach(row=>{
+      const ins = row.querySelectorAll('input');
+      if(ins[0]&&ins[0].value.trim()) mats.push({nombre:ins[0].value.trim(), cant:ins[1]?ins[1].value:'', unidad:ins[2]?ins[2].value:''});
+    });
+    if(!mats.length){ alert('Agrega al menos un material.'); return; }
+
+    const req = { id: Date.now(), proyecto, persona, fecha, urgencia:reqUrgencia, materiales:mats, proveedor, notas, estado:'pendiente' };
+    requisiciones.unshift(req);
+    renderReqs('todas');
+    limpiarReq();
+  };
+
+  window.limpiarReq = function(){
+    document.getElementById('req-proyecto').value='';
+    document.getElementById('req-persona').value='';
+    const f=document.getElementById('req-fecha'); if(f){ const d=new Date(); f.value=d.toISOString().split('T')[0]; }
+    document.getElementById('req-proveedor').value='';
+    document.getElementById('req-notas').value='';
+    reqUrgencia='';
+    ['rutinaria','pronto','urgente'].forEach(u=>{ const el=document.getElementById('urg-'+u); if(el){el.style.borderColor='var(--border)';el.style.background='transparent';} });
+    const list=document.getElementById('req-materiales-list');
+    list.innerHTML=`<div class="req-mat-row" style="display:grid;grid-template-columns:1fr 80px 70px auto;gap:6px;align-items:center;">
+      <input type="text" placeholder="Nombre del material" style="width:100%;">
+      <input type="number" placeholder="Cant." min="0" step="0.5" style="width:100%;text-align:center;">
+      <input type="text" placeholder="Unidad" style="width:100%;">
+      <button onclick="addMatRow()" style="width:28px;height:28px;border-radius:50%;border:1px solid var(--border);background:var(--surface);cursor:pointer;font-size:16px;line-height:1;color:var(--text-secondary);">+</button>
+    </div>`;
+  };
+
+  window.marcarComprado = function(id){
+    const r = requisiciones.find(x=>x.id===id);
+    if(r) r.estado = r.estado==='comprado' ? 'pendiente' : 'comprado';
+    renderReqs(window._reqFiltro||'todas');
+  };
+
+  window.filtrarReqs = function(tipo, btn){
+    document.querySelectorAll('#view-requisiciones .filter-btn').forEach(b=>b.classList.remove('active'));
+    if(btn) btn.classList.add('active');
+    window._reqFiltro = tipo;
+    renderReqs(tipo);
+  };
+
+  function renderReqs(filtro){
+    const el = document.getElementById('req-historial');
+    if(!el) return;
+    const urgColor={urgente:'#9B2226',pronto:'#7D5A00',rutinaria:'#2D6A4F'};
+    const urgLabel={urgente:'Urgente',pronto:'Pronto',rutinaria:'Rutinaria'};
+    const urgBg={urgente:'#F8DEDE',pronto:'#FFF0C2',rutinaria:'#D8EFE4'};
+
+    let list = requisiciones;
+    if(filtro==='urgente')  list = requisiciones.filter(r=>r.urgencia==='urgente');
+    if(filtro==='pendiente') list = requisiciones.filter(r=>r.estado==='pendiente');
+    if(filtro==='comprado') list = requisiciones.filter(r=>r.estado==='comprado');
+
+    if(!list.length){
+      el.innerHTML=`<div class="empty"><div style="font-size:28px;margin-bottom:8px;">📋</div><div style="font-size:12px;color:var(--text-secondary);">Sin requisiciones${filtro!=='todas'?' en este filtro':' todavía'}</div></div>`;
+      return;
+    }
+
+    el.innerHTML = list.map(r=>{
+      const mats = r.materiales.map(m=>`<span style="display:inline-block;font-size:11px;background:var(--bg);border:1px solid var(--border-soft);border-radius:4px;padding:2px 7px;margin:2px 2px 2px 0;">${m.nombre}${m.cant?' · '+m.cant+' '+m.unidad:''}</span>`).join('');
+      const comprado = r.estado==='comprado';
+      return `<div style="padding:12px 16px;border-bottom:1px solid var(--border-soft);${comprado?'opacity:.5':''}">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:6px;">
+          <div>
+            <div style="font-size:12.5px;font-weight:600;color:var(--text);${comprado?'text-decoration:line-through':''}">${r.proyecto}</div>
+            <div style="font-size:11px;color:var(--text-secondary);margin-top:1px;">${r.persona} · ${r.fecha}${r.proveedor?' · '+r.proveedor:''}</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
+            <span style="font-size:10px;font-weight:600;padding:2px 8px;border-radius:20px;background:${urgBg[r.urgencia]};color:${urgColor[r.urgencia]};">${urgLabel[r.urgencia]}</span>
+            <button onclick="marcarComprado(${r.id})" style="font-size:11px;padding:3px 9px;border-radius:var(--radius);border:1px solid var(--border);background:${comprado?'var(--green-light)':'var(--surface)'};color:${comprado?'var(--green)':'var(--text-secondary)'};cursor:pointer;">${comprado?'✓ Comprado':'Marcar comprado'}</button>
+          </div>
+        </div>
+        <div style="margin-bottom:${r.notas?'6px':'0'}">${mats}</div>
+        ${r.notas?`<div style="font-size:11px;color:var(--text-secondary);font-style:italic;">${r.notas}</div>`:''}
+      </div>`;
+    }).join('');
+  }
+  // ───────────────────────────────────────────────────────────
+
+  const titles = {
+    dashboard: 'Dashboard',
+    proyectos: 'Proyectos',
+    personal: 'Personal',
+    horas: 'Registrar horas',
+    materiales: 'Materiales',
+    requisiciones: 'Requisiciones de material',
+    cronograma: 'Cronograma de producción'
+  };
+
+  function showView(id) {
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    document.getElementById('view-' + id).classList.add('active');
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n => {
+      if (n.getAttribute('onclick') && n.getAttribute('onclick').includes(id)) n.classList.add('active');
+    });
+    document.getElementById('topbar-title').textContent = titles[id] || id;
+  }
+
+  function filterProyectos(cat, btn) {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const rows = document.querySelectorAll('#proyectos-tbody tr');
+    rows.forEach(row => {
+      if (cat === 'todos') { row.style.display = ''; return; }
+      if (cat === 'espera') { row.style.display = row.dataset.estado === 'espera' ? '' : 'none'; return; }
+      row.style.display = row.dataset.cat === cat ? '' : 'none';
+    });
+  }
+
+  function filterMat(type, btn) {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('mat-general').style.display  = type === 'todos'    ? 'block' : 'none';
+    document.getElementById('mat-proyecto').style.display = type === 'proyecto' ? 'block' : 'none';
+  }
+</script>
+
+</div><!-- /app-screen -->
+
+<script>
+// ═══════════════════════════════════════════════
+//  SUPABASE — configuración y autenticación
+// ═══════════════════════════════════════════════
+const SUPA_URL = 'https://nrkxfxdknafwnucsplqq.supabase.co';
+const SUPA_KEY = 'sb_publishable_wj85TMtp44abGIUBN4ExWg_RhU23tHb';
+const sb = supabase.createClient(SUPA_URL, SUPA_KEY);
+
+let currentUser = null;
+let currentPersona = null;
+
+// Al cargar — revisar si ya hay sesión activa
+window.addEventListener('load', async () => {
+  const { data: { session } } = await sb.auth.getSession();
+  if (session) {
+    await onLogin(session.user);
+  } else {
+    document.getElementById('login-screen').style.display = 'flex';
+  }
+});
+
+// Login con nombre de usuario
+window.doLogin = async function() {
+  const username = document.getElementById('login-username').value.trim().toLowerCase();
+  const pass     = document.getElementById('login-pass').value;
+  const errEl    = document.getElementById('login-error');
+  const loadEl   = document.getElementById('login-loading');
+  errEl.style.display  = 'none';
+  loadEl.style.display = 'block';
+
+  if (!username || !pass) {
+    errEl.style.display  = 'block';
+    loadEl.style.display = 'none';
+    return;
+  }
+
+  // Construir el email interno a partir del username
+  const email = username + '@fergana.app';
+
+  const { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
+  loadEl.style.display = 'none';
+
+  if (error) {
+    errEl.style.display = 'block';
+    return;
+  }
+  await onLogin(data.user);
+};
+
+async function onLogin(user) {
+  currentUser = user;
+
+  // Buscar en tabla usuarios por email interno
+  const { data: usuario } = await sb.from('usuarios')
+    .select('*')
+    .eq('auth_email', user.email)
+    .single();
+
+  currentPersona = usuario;
+
+  const rolLabel = {
+    admin: 'Administrador',
+    gerente: 'Gerente de proyectos',
+    coordinacion: 'Coordinación',
+    contabilidad: 'Contabilidad'
+  };
+
+  if (usuario) {
+    document.getElementById('sidebar-user-name').textContent = usuario.nombre;
+    document.getElementById('sidebar-user-role').textContent = rolLabel[usuario.rol] || usuario.rol;
+  }
+
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app-screen').style.display   = 'block';
+
+  await Promise.all([
+    cargarPersonas(),
+    cargarProyectosDB(),
+    cargarRequisicionesDB(),
+  ]);
+}
+
+// Cerrar sesión
+window.cerrarSesion = async function() {
+  await sb.auth.signOut();
+  currentUser = null;
+  currentPersona = null;
+  document.getElementById('app-screen').style.display = 'none';
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('login-email').value = '';
+  document.getElementById('login-pass').value = '';
+};
+
+// ═══════════════════════════════════════════════
+//  PERSONAS — cargar desde Supabase
+// ═══════════════════════════════════════════════
+let personasDB = [];
+
+async function cargarPersonas() {
+  const { data } = await sb.from('personas').select('*').eq('activo', true).order('nombre');
+  if (!data) return;
+  personasDB = data;
+
+  // Actualizar selects de personas en registro de horas y requisiciones
+  const selPersona = document.getElementById('req-persona');
+  if (selPersona) {
+    selPersona.innerHTML = '<option value="">Seleccionar...</option>' +
+      data.map(p => `<option value="${p.id}">${p.nombre}</option>`).join('');
+  }
+}
+
+// ═══════════════════════════════════════════════
+//  PROYECTOS — leer desde Supabase
+// ═══════════════════════════════════════════════
+async function cargarProyectosDB() {
+  const { data, error } = await sb.from('proyectos')
+    .select('*, asignaciones(persona_id, personas(nombre))')
+    .order('fecha_entrada', { ascending: true });
+
+  if (error || !data) return;
+
+  const tbody = document.getElementById('proyectos-tbody');
+  if (!tbody) return;
+
+  const catLabel = {resurtido:'Resurtido', proyecto:'Proyecto', pedido_especial:'Pedido especial', ensamble:'Ensamble', prototipo:'Prototipo'};
+  const catCss   = {resurtido:'cat-resurtido', proyecto:'cat-proyecto', pedido_especial:'cat-pedido', ensamble:'cat-ensamble', prototipo:'cat-prototipo'};
+  const estLabel = {en_produccion:'En producción', en_espera:'En espera', retraso:'Retraso', listo:'Listo', pausa:'En pausa', entregado:'Entregado'};
+  const estBadge = {en_produccion:'badge-prog', en_espera:'badge-esp', retraso:'badge-ret', listo:'badge-listo', pausa:'badge-pausa', entregado:'badge-listo'};
+
+  tbody.innerHTML = data.map(p => {
+    const equipo = (p.asignaciones||[]).map(a =>
+      `<div class="avatar" style="background:#F0E6DC;color:#8B5E3C;width:24px;height:24px;font-size:10px;">${(a.personas?.nombre||'?').substring(0,2).toUpperCase()}</div>`
+    ).join('');
+    const entrega = p.fecha_entrega ? new Date(p.fecha_entrega).toLocaleDateString('es-MX',{day:'numeric',month:'short'}) : '—';
+    return `<tr data-cat="${p.categoria}" data-estado="${p.estado}">
+      <td><div style="font-weight:600;font-size:12.5px;">${p.nombre}</div><div class="mono">${p.codigo||''} ${p.descripcion||''}</div></td>
+      <td><span class="cat-badge ${catCss[p.categoria]||''}">${catLabel[p.categoria]||p.categoria}</span></td>
+      <td><span class="area-pill area-active">${p.area_actual||'—'}</span></td>
+      <td><div class="avatar-group">${equipo||'<span style="font-size:11px;color:var(--text-tertiary);">—</span>'}</div></td>
+      <td><span class="badge ${estBadge[p.estado]||'badge-esp'}">${p.nota_estado||estLabel[p.estado]||p.estado}</span></td>
+      <td><span class="days-ok">${entrega}</span></td>
+    </tr>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════════════════
+//  REQUISICIONES — guardar y leer desde Supabase
+// ═══════════════════════════════════════════════
+async function cargarRequisicionesDB() {
+  const { data } = await sb.from('requisiciones')
+    .select('*, proyectos(nombre), personas(nombre), requisicion_materiales(*)')
+    .order('created_at', { ascending: false });
+
+  if (!data) return;
+
+  // Convertir al formato que ya usa renderReqs
+  requisiciones = data.map(r => ({
+    id: r.id,
+    proyecto: r.proyectos?.nombre || '—',
+    persona: r.personas?.nombre || '—',
+    fecha: r.fecha,
+    urgencia: r.urgencia,
+    materiales: (r.requisicion_materiales||[]).map(m => ({nombre:m.nombre, cant:m.cantidad, unidad:m.unidad})),
+    proveedor: r.proveedor,
+    notas: r.notas,
+    estado: r.estado,
+    _dbId: r.id
+  }));
+  renderReqs(window._reqFiltro || 'todas');
+}
+
+// Sobreescribir guardarReq para que también guarde en Supabase
+const _guardarReqOriginal = window.guardarReq;
+window.guardarReq = async function() {
+  const proyecto_id_sel = document.getElementById('req-proyecto').value;
+  const persona_id_sel  = document.getElementById('req-persona').value;
+  const fecha    = document.getElementById('req-fecha').value;
+  const proveedor= document.getElementById('req-proveedor').value;
+  const notas    = document.getElementById('req-notas').value;
+
+  if (!proyecto_id_sel || !persona_id_sel || !fecha || !reqUrgencia) {
+    alert('Por favor completa: proyecto, persona, fecha y nivel de urgencia.');
+    return;
+  }
+
+  const mats = [];
+  document.querySelectorAll('.req-mat-row').forEach(row => {
+    const ins = row.querySelectorAll('input');
+    if (ins[0] && ins[0].value.trim()) mats.push({ nombre: ins[0].value.trim(), cantidad: ins[1]?.value||null, unidad: ins[2]?.value||'' });
+  });
+  if (!mats.length) { alert('Agrega al menos un material.'); return; }
+
+  // Buscar proyecto_id real desde proyectos
+  const { data: proy } = await sb.from('proyectos').select('id,nombre').ilike('nombre', `%${proyecto_id_sel.split('—')[0].trim()}%`).limit(1);
+  const proyecto_id = proy?.[0]?.id || null;
+  const proyecto_nombre = proy?.[0]?.nombre || proyecto_id_sel;
+
+  const { data: req, error } = await sb.from('requisiciones').insert({
+    proyecto_id,
+    solicitante_id: persona_id_sel || null,
+    fecha,
+    urgencia: reqUrgencia,
+    proveedor,
+    notas,
+    estado: 'pendiente'
+  }).select().single();
+
+  if (error) { alert('Error al guardar: ' + error.message); return; }
+
+  // Guardar materiales
+  await sb.from('requisicion_materiales').insert(mats.map(m => ({ ...m, requisicion_id: req.id })));
+
+  await cargarRequisicionesDB();
+  limpiarReq();
+};
+
+// Marcar comprado en Supabase
+const _marcarOriginal = window.marcarComprado;
+window.marcarComprado = async function(id) {
+  const r = requisiciones.find(x => x.id === id || x._dbId === id);
+  if (!r) return;
+  const nuevoEstado = r.estado === 'comprado' ? 'pendiente' : 'comprado';
+  await sb.from('requisiciones').update({ estado: nuevoEstado }).eq('id', r._dbId || r.id);
+  await cargarRequisicionesDB();
+};
+
+// ═══════════════════════════════════════════════
+//  REGISTRO DE HORAS — guardar en Supabase
+// ═══════════════════════════════════════════════
+window.guardarHoras = async function() {
+  const fecha = document.getElementById('req-fecha-horas')?.value || new Date().toISOString().split('T')[0];
+  const rows  = document.querySelectorAll('.hours-row');
+  const inserts = [];
+
+  rows.forEach(row => {
+    const sel  = row.querySelector('select');
+    const hIn  = row.querySelectorAll('input[type=number]')[0];
+    const nota = row.querySelector('input[type=text]');
+    const personaId = row.dataset.personaId;
+    const proyectoId = sel?.value;
+    const horas = parseFloat(hIn?.value);
+    if (personaId && proyectoId && horas > 0) {
+      inserts.push({ persona_id: personaId, proyecto_id: proyectoId, fecha, horas, nota: nota?.value || null });
+    }
+  });
+
+  if (!inserts.length) { alert('No hay horas que guardar.'); return; }
+  const { error } = await sb.from('horas').insert(inserts);
+  if (error) { alert('Error: ' + error.message); return; }
+  alert(`✓ ${inserts.length} registros guardados correctamente.`);
+};
+</script>
+</body>
+</html>
