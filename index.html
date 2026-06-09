@@ -958,13 +958,13 @@
       <div id="view-proyectos" class="view">
 
         <div class="filter-bar">
-          <button class="filter-btn active" onclick="filterProyectos('todos', this)">Todos (13)</button>
+          <button class="filter-btn active" id="filter-todos" onclick="filterProyectos('todos', this)">Todos</button>
           <button class="filter-btn" onclick="filterProyectos('resurtido', this)">Resurtido</button>
           <button class="filter-btn" onclick="filterProyectos('proyecto', this)">Proyecto</button>
-          <button class="filter-btn" onclick="filterProyectos('pedido', this)">Pedido especial</button>
+          <button class="filter-btn" onclick="filterProyectos('pedido_especial', this)">Pedido especial</button>
           <button class="filter-btn" onclick="filterProyectos('ensamble', this)">Ensamble</button>
           <button class="filter-btn" onclick="filterProyectos('prototipo', this)">Prototipo</button>
-          <button class="filter-btn" onclick="filterProyectos('espera', this)">En espera</button>
+          <button class="filter-btn" onclick="filterProyectos('en_espera', this)">En espera</button>
         </div>
 
         <div class="card">
@@ -976,7 +976,7 @@
             <table>
               <thead>
                 <tr>
-                  <th>Proyecto / pieza</th>
+                  <th>Cliente / Pieza</th>
                   <th>Categoría</th>
                   <th>Área actual</th>
                   <th>Equipo</th>
@@ -985,204 +985,12 @@
                 </tr>
               </thead>
               <tbody id="proyectos-tbody">
-                <!-- RESURTIDO NAMUH -->
-                <tr data-cat="resurtido" data-estado="espera">
-                  <td><div style="font-weight:600;">Sillas Diez — NAMUH</div><div class="mono">006583 · 62×80×45×95 · 2 pzas</div></td>
-                  <td><span class="cat-badge cat-resurtido">Resurtido</span></td>
-                  <td><span class="area-pill area-active">Espera tapicería</span></td>
-                  <td><span style="font-size:11px;color:var(--text-tertiary);">Proveedor ext.</span></td>
-                  <td><span class="badge badge-ret">Retraso</span></td>
-                  <td><span class="urgent">11 mar ⚠</span></td>
-                </tr>
-                <tr data-cat="resurtido" data-estado="espera">
-                  <td><div style="font-weight:600;">Sillas Diez Fresno Cenizo — NAMUH</div><div class="mono">006987 · 62×80×45×95 · 2 pzas</div></td>
-                  <td><span class="cat-badge cat-resurtido">Resurtido</span></td>
-                  <td><span class="area-pill area-active">Espera tapicería</span></td>
-                  <td><span style="font-size:11px;color:var(--text-tertiary);">Proveedor ext.</span></td>
-                  <td><span class="badge badge-ret">Retraso</span></td>
-                  <td><span class="urgent">11 mar ⚠</span></td>
-                </tr>
-                <!-- SENDEROS -->
-                <tr data-cat="proyecto" data-estado="produccion">
-                  <td><div style="font-weight:600;">Shutters casita — Senderos</div><div class="mono">4 piezas · falta muestra de tono</div></td>
-                  <td><span class="cat-badge cat-proyecto">Proyecto</span></td>
-                  <td><span class="area-pill area-active">Terminados</span></td>
-                  <td><div class="avatar av-la">LA</div></td>
-                  <td><span class="badge badge-ret">Retraso</span></td>
-                  <td><span class="urgent">3 mar ⚠</span></td>
-                </tr>
-                <tr data-cat="proyecto" data-estado="produccion">
-                  <td><div style="font-weight:600;">Puertas interiores — Senderos</div><div class="mono">6 piezas</div></td>
-                  <td><span class="cat-badge cat-proyecto">Proyecto</span></td>
-                  <td><span class="area-pill area-active">Carpintería</span></td>
-                  <td><div class="avatar-group"><div class="avatar av-ro">RO</div><div class="avatar av-ma">MA</div></div></td>
-                  <td><span class="badge badge-prog">En producción</span></td>
-                  <td><span class="days-ok">3 jun</span></td>
-                </tr>
-                <tr data-cat="proyecto" data-estado="listo">
-                  <td><div style="font-weight:600;">Puertas exteriores — Senderos</div><div class="mono">2 piezas</div></td>
-                  <td><span class="cat-badge cat-proyecto">Proyecto</span></td>
-                  <td><span class="area-pill" style="background:var(--green-light);color:var(--green);">Lista · instalar ✓</span></td>
-                  <td><span style="font-size:11px;color:var(--text-tertiary);">—</span></td>
-                  <td><span class="badge badge-listo">Lista</span></td>
-                  <td><span class="days-ok">12 jun</span></td>
-                </tr>
-                <tr data-cat="proyecto" data-estado="produccion">
-                  <td><div style="font-weight:600;">Ventana — Senderos</div></td>
-                  <td><span class="cat-badge cat-proyecto">Proyecto</span></td>
-                  <td><span class="area-pill area-active">Carpintería</span></td>
-                  <td><div class="avatar av-ed">ED</div></td>
-                  <td><span class="badge badge-prog">En producción</span></td>
-                  <td><span class="days-ok">12 jun</span></td>
-                </tr>
-                <tr data-cat="proyecto" data-estado="produccion">
-                  <td><div style="font-weight:600;">Duela borneo piso terraza — Senderos</div><div class="mono">Instalación esta semana</div></td>
-                  <td><span class="cat-badge cat-proyecto">Proyecto</span></td>
-                  <td><span class="area-pill area-active">Carpintería</span></td>
-                  <td><div class="avatar av-le">LE</div></td>
-                  <td><span class="badge badge-prog">En producción</span></td>
-                  <td><span class="urgent">10 jun</span></td>
-                </tr>
-                <!-- PEDIDOS ESPECIALES -->
-                <tr data-cat="pedido" data-estado="produccion">
-                  <td><div style="font-weight:600;">Mesa de mármol — Alejandro Vázquez</div><div class="mono">PY-006223</div></td>
-                  <td><span class="cat-badge cat-pedido">Pedido especial</span></td>
-                  <td><span class="area-pill area-active">Terminando</span></td>
-                  <td><div class="avatar av-an">AN</div></td>
-                  <td><span class="badge badge-prog">En producción</span></td>
-                  <td><span class="days-ok">19 jun</span></td>
-                </tr>
-                <tr data-cat="pedido" data-estado="espera">
-                  <td><div style="font-weight:600;">Gabinete TV — Karina Tavarez</div><div class="mono">007003 · espera herrajes Funart</div></td>
-                  <td><span class="cat-badge cat-pedido">Pedido especial</span></td>
-                  <td><span class="area-pill area-active">Espera herrajes</span></td>
-                  <td><span style="font-size:11px;color:var(--text-tertiary);">Funart ext.</span></td>
-                  <td><span class="badge badge-ret">Retraso</span></td>
-                  <td><span class="urgent">21 may ⚠</span></td>
-                </tr>
-                <tr data-cat="pedido" data-estado="produccion">
-                  <td><div style="font-weight:600;">Mesa centro 220 — Martha Cortina</div><div class="mono">007006</div></td>
-                  <td><span class="cat-badge cat-pedido">Pedido especial</span></td>
-                  <td><span class="area-pill" style="background:var(--green-light);color:var(--green);">Entregado ✓</span></td>
-                  <td><span style="font-size:11px;color:var(--text-tertiary);">—</span></td>
-                  <td><span class="badge badge-listo">Entregado</span></td>
-                  <td><span class="days-ok">11 jun</span></td>
-                </tr>
-                <tr data-cat="pedido" data-estado="espera">
-                  <td><div style="font-weight:600;">Bufetera Lao — Minerva Cepeda</div><div class="mono">007008 · espera compra de material</div></td>
-                  <td><span class="cat-badge cat-pedido">Pedido especial</span></td>
-                  <td><span class="area-pill area-next">Sin iniciar</span></td>
-                  <td><span style="font-size:11px;color:var(--text-tertiary);">—</span></td>
-                  <td><span class="badge badge-esp">En espera</span></td>
-                  <td><span class="days-ok">3 ago</span></td>
-                </tr>
-                <!-- IVETTE BELTRAN -->
-                <tr data-cat="proyecto" data-estado="listo">
-                  <td><div style="font-weight:600;">Pedestal — Ivette Beltrán</div><div class="mono">38×38×110 · listo para empacar</div></td>
-                  <td><span class="cat-badge cat-proyecto">Proyecto</span></td>
-                  <td><span class="area-pill" style="background:var(--green-light);color:var(--green);">Empaque ✓</span></td>
-                  <td><div class="avatar av-la">LA</div></td>
-                  <td><span class="badge badge-listo">Sale hoy</span></td>
-                  <td><span class="tomorrow">Hoy</span></td>
-                </tr>
-                <tr data-cat="proyecto" data-estado="produccion">
-                  <td><div style="font-weight:600;">Cajonera — Ivette Beltrán</div><div class="mono">150×62×78 · sale de pulido hoy</div></td>
-                  <td><span class="cat-badge cat-proyecto">Proyecto</span></td>
-                  <td><span class="area-pill area-active">Terminados</span></td>
-                  <td><div class="avatar av-mo">MO</div></td>
-                  <td><span class="badge badge-prog">Entra a terminados</span></td>
-                  <td><span class="days-ok">3 jul</span></td>
-                </tr>
-                <tr data-cat="proyecto" data-estado="produccion">
-                  <td><div style="font-weight:600;">Trinche — Ivette Beltrán</div><div class="mono">350×80×90</div></td>
-                  <td><span class="cat-badge cat-proyecto">Proyecto</span></td>
-                  <td><span class="area-pill area-active">Pulido</span></td>
-                  <td><div class="avatar av-mo">MO</div></td>
-                  <td><span class="badge badge-prog">En pulido</span></td>
-                  <td><span class="days-ok">3 jul</span></td>
-                </tr>
-                <tr data-cat="proyecto" data-estado="pausa">
-                  <td><div style="font-weight:600;">Librero / Mueble TV — Ivette Beltrán</div><div class="mono">430×55×250 · pausa por duelas</div></td>
-                  <td><span class="cat-badge cat-proyecto">Proyecto</span></td>
-                  <td><span class="area-pill" style="background:var(--gray-light);color:var(--text-secondary);">Carpintería ⏸</span></td>
-                  <td><div class="avatar av-le">LE</div></td>
-                  <td><span class="badge badge-pausa">En pausa</span></td>
-                  <td><span class="days-ok">17 jul</span></td>
-                </tr>
-                <!-- EDUARDO CARRASCO -->
-                <tr data-cat="proyecto" data-estado="espera">
-                  <td><div style="font-weight:600;">Burós — Eduardo Carrasco</div><div class="mono">75×55×76 · 4 piezas · espera material</div></td>
-                  <td><span class="cat-badge cat-proyecto">Proyecto</span></td>
-                  <td><span class="area-pill area-next">Sin iniciar</span></td>
-                  <td><span style="font-size:11px;color:var(--text-tertiary);">—</span></td>
-                  <td><span class="badge badge-esp">En espera</span></td>
-                  <td><span class="days-ok">17 jul</span></td>
-                </tr>
-                <!-- NAMUH OTROS -->
-                <tr data-cat="resurtido" data-estado="espera">
-                  <td><div style="font-weight:600;">Vitrina B — Casa Palacio / NAMUH</div><div class="mono">Espera orden de producción</div></td>
-                  <td><span class="cat-badge cat-resurtido">Resurtido</span></td>
-                  <td><span class="area-pill area-next">Sin iniciar</span></td>
-                  <td><span style="font-size:11px;color:var(--text-tertiary);">—</span></td>
-                  <td><span class="badge badge-esp">En espera</span></td>
-                  <td><span class="days-ok">10 jul</span></td>
-                </tr>
-                <!-- PROTOTIPO -->
-                <tr data-cat="prototipo" data-estado="produccion">
-                  <td><div style="font-weight:600;">Lámpara Sama</div><div class="mono">Lista · falta barniz</div></td>
-                  <td><span class="cat-badge cat-prototipo">Prototipo</span></td>
-                  <td><span class="area-pill area-active">Terminados</span></td>
-                  <td><div class="avatar av-la">LA</div></td>
-                  <td><span class="badge badge-prog">Casi lista</span></td>
-                  <td><span style="font-size:11px;color:var(--text-tertiary);">—</span></td>
-                </tr>
-                <!-- ENSAMBLES -->
-                <tr data-cat="ensamble" data-estado="espera">
-                  <td><div style="font-weight:600;">Mesas chuletas (par)</div><div class="mono">Espera inicio de producción</div></td>
-                  <td><span class="cat-badge cat-ensamble">Ensamble</span></td>
-                  <td><span class="area-pill area-next">Sin iniciar</span></td>
-                  <td><span style="font-size:11px;color:var(--text-tertiary);">—</span></td>
-                  <td><span class="badge badge-esp">En espera</span></td>
-                  <td><span style="font-size:11px;color:var(--text-tertiary);">—</span></td>
-                </tr>
-                <tr data-cat="ensamble" data-estado="espera">
-                  <td><div style="font-weight:600;">Mesas chuletas — nuevos diseños</div><div class="mono">Espera inicio de producción</div></td>
-                  <td><span class="cat-badge cat-ensamble">Ensamble</span></td>
-                  <td><span class="area-pill area-next">Sin iniciar</span></td>
-                  <td><span style="font-size:11px;color:var(--text-tertiary);">—</span></td>
-                  <td><span class="badge badge-esp">En espera</span></td>
-                  <td><span style="font-size:11px;color:var(--text-tertiary);">—</span></td>
-                </tr>
-                <tr data-cat="ensamble" data-estado="espera">
-                  <td><div style="font-weight:600;">Cantina</div><div class="mono">Espera inicio de producción</div></td>
-                  <td><span class="cat-badge cat-ensamble">Ensamble</span></td>
-                  <td><span class="area-pill area-next">Sin iniciar</span></td>
-                  <td><span style="font-size:11px;color:var(--text-tertiary);">—</span></td>
-                  <td><span class="badge badge-esp">En espera</span></td>
-                  <td><span style="font-size:11px;color:var(--text-tertiary);">—</span></td>
-                </tr>
-                <tr data-cat="ensamble" data-estado="espera">
-                  <td><div style="font-weight:600;">Barra Siddharta</div><div class="mono">Espera inicio de producción</div></td>
-                  <td><span class="cat-badge cat-ensamble">Ensamble</span></td>
-                  <td><span class="area-pill area-next">Sin iniciar</span></td>
-                  <td><span style="font-size:11px;color:var(--text-tertiary);">—</span></td>
-                  <td><span class="badge badge-esp">En espera</span></td>
-                  <td><span style="font-size:11px;color:var(--text-tertiary);">—</span></td>
-                </tr>
-                <tr data-cat="ensamble" data-estado="espera">
-                  <td><div style="font-weight:600;">Consola</div><div class="mono">Espera inicio de producción</div></td>
-                  <td><span class="cat-badge cat-ensamble">Ensamble</span></td>
-                  <td><span class="area-pill area-next">Sin iniciar</span></td>
-                  <td><span style="font-size:11px;color:var(--text-tertiary);">—</span></td>
-                  <td><span class="badge badge-esp">En espera</span></td>
-                  <td><span style="font-size:11px;color:var(--text-tertiary);">—</span></td>
-                </tr>
+                <tr><td colspan="6" style="padding:32px;text-align:center;color:var(--text-tertiary);font-size:13px;">Cargando proyectos...</td></tr>
               </tbody>
             </table>
           </div>
         </div>
       </div>
-
       <!-- ═══════════ PERSONAL ═══════════ -->
       <div id="view-personal" class="view">
         <div class="people-grid">
@@ -1677,11 +1485,18 @@
     const el = document.getElementById('gantt-root');
     if(!el) return;
 
-    // Agrupar por categoría
-    const grupos = {
-      resurtido:[], proyecto:[], pedido_especial:[], ensamble:[], prototipo:[]
-    };
-    ganttData.forEach(p=>{ if(grupos[p.categoria]) grupos[p.categoria].push(p); });
+    // Agrupar por cliente
+    const grupos = {};
+    const ordenClientes = ['Senderos','Ivette Beltrán','NAMUH','Alejandro Vázquez','Karina Tavarez','Martha Cortina','Minerva Cepeda','Eduardo Carrasco','Ensambles','Prototipos'];
+    ganttData.forEach(p=>{
+      const key = p.cliente || 'Sin cliente';
+      if(!grupos[key]) grupos[key] = [];
+      grupos[key].push(p);
+    });
+    const clientesOrdenados = [
+      ...ordenClientes.filter(c=>grupos[c]),
+      ...Object.keys(grupos).filter(c=>!ordenClientes.includes(c))
+    ];
 
     let html = '<table style="width:100%;border-collapse:collapse;font-size:12px;table-layout:fixed;">';
     html += '<colgroup><col style="width:175px"><col style="width:75px"><col><col style="width:90px"></colgroup>';
@@ -1708,9 +1523,10 @@
 
     const secLabels={resurtido:'Resurtido NAMUH',proyecto:'Proyectos',pedido_especial:'Pedidos especiales',ensamble:'Ensambles',prototipo:'Prototipos'};
 
-    Object.entries(grupos).forEach(([cat,items])=>{
-      if(!items.length) return;
-      html+=`<tr><td colspan="4" style="padding:7px 12px;font-size:10px;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.05em;background:var(--bg);border-bottom:1px solid var(--border-soft);">${secLabels[cat]||cat}</td></tr>`;
+    clientesOrdenados.forEach(cliente=>{
+      const items = grupos[cliente];
+      if(!items||!items.length) return;
+      html+=`<tr><td colspan="4" style="padding:7px 12px;font-size:10px;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.05em;background:var(--bg);border-bottom:1px solid var(--border-soft);">${cliente}</td></tr>`;
 
       items.forEach(p=>{
         const color = STATUS_COLOR[p.estado]||'#888';
@@ -1958,11 +1774,22 @@
   function filterProyectos(cat, btn) {
     document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
-    const rows = document.querySelectorAll('#proyectos-tbody tr');
+    const rows = document.querySelectorAll('#proyectos-tbody tr.grupo-item');
+    const headers = document.querySelectorAll('#proyectos-tbody tr.grupo-header');
     rows.forEach(row => {
-      if (cat === 'todos') { row.style.display = ''; return; }
-      if (cat === 'espera') { row.style.display = row.dataset.estado === 'espera' ? '' : 'none'; return; }
-      row.style.display = row.dataset.cat === cat ? '' : 'none';
+      if (cat === 'todos') { row.style.display = gruposExpandidos[row.dataset.cliente] !== false ? '' : 'none'; return; }
+      const matchCat = cat === 'en_espera' ? ['en_espera','pausa'].includes(row.dataset.estado) : row.dataset.cat === cat;
+      row.style.display = matchCat ? '' : 'none';
+    });
+    // Mostrar/ocultar headers según si tienen hijos visibles
+    headers.forEach(hdr => {
+      const key = hdr.querySelector('span[id^="arrow-"]')?.id?.replace('arrow-','');
+      if (!key) return;
+      const tieneVisibles = [...document.querySelectorAll(`#proyectos-tbody tr.grupo-item`)].some(r => {
+        const matchKey = r.className.includes(key.replace(/[^a-zA-Z0-9_]/g,''));
+        return matchKey && r.style.display !== 'none';
+      });
+      hdr.style.display = tieneVisibles ? '' : 'none';
     });
   }
 
@@ -2092,6 +1919,9 @@ async function cargarPersonas() {
 // ═══════════════════════════════════════════════
 //  PROYECTOS — leer desde Supabase
 // ═══════════════════════════════════════════════
+const ORDEN_CLIENTES = ['Senderos','Ivette Beltrán','NAMUH','Alejandro Vázquez','Karina Tavarez','Martha Cortina','Minerva Cepeda','Eduardo Carrasco','Ensambles','Prototipos'];
+const gruposExpandidos = {};
+
 async function cargarProyectosDB() {
   const { data, error } = await sb.from('proyectos')
     .select('*, asignaciones(persona_id, personas(nombre))')
@@ -2105,37 +1935,34 @@ async function cargarProyectosDB() {
   const estBadge = {en_produccion:'badge-prog', en_espera:'badge-esp', retraso:'badge-ret', listo:'badge-listo', pausa:'badge-pausa', entregado:'badge-listo'};
   const areaLabel= {carpinteria:'Carpintería', pulido:'Pulido', terminados:'Terminados', empaque:'Empaque', entregado:'Entregado'};
 
-  // ── Actualizar tabla de proyectos ──
-  const tbody = document.getElementById('proyectos-tbody');
-  if (tbody) {
-    tbody.innerHTML = data.map(p => {
-      const equipo = (p.asignaciones||[]).map(a =>
-        `<div class="avatar" style="background:#F0E6DC;color:#8B5E3C;width:24px;height:24px;font-size:10px;">${(a.personas?.nombre||'?').substring(0,2).toUpperCase()}</div>`
-      ).join('');
-      const entrega = p.fecha_entrega ? new Date(p.fecha_entrega+'T12:00:00').toLocaleDateString('es-MX',{day:'numeric',month:'short'}) : '—';
-      return `<tr data-cat="${p.categoria}" data-estado="${p.estado}">
-        <td><div style="font-weight:600;font-size:12.5px;">${p.nombre}${p.cliente?' — '+p.cliente:''}</div><div class="mono">${p.codigo||''} ${p.descripcion||''}</div></td>
-        <td><span class="cat-badge ${catCss[p.categoria]||''}">${catLabel[p.categoria]||p.categoria}</span></td>
-        <td><span class="area-pill area-active">${areaLabel[p.area_actual]||p.area_actual||'—'}</span></td>
-        <td><div class="avatar-group">${equipo||'<span style="font-size:11px;color:var(--text-tertiary);">—</span>'}</div></td>
-        <td><span class="badge ${estBadge[p.estado]||'badge-esp'}">${p.nota_estado||estLabel[p.estado]||p.estado}</span></td>
-        <td><span class="days-ok">${entrega}</span></td>
-      </tr>`;
-    }).join('');
-  }
+  // Agrupar por cliente
+  const grupos = {};
+  data.forEach(p => {
+    const key = p.cliente || 'Sin cliente';
+    if (!grupos[key]) grupos[key] = [];
+    grupos[key].push(p);
+  });
 
-  // ── Actualizar dashboard ──
-  const total     = data.length;
-  const enProd    = data.filter(p=>p.estado==='en_produccion').length;
-  const retraso   = data.filter(p=>p.estado==='retraso').length;
-  const enEspera  = data.filter(p=>['en_espera','pausa'].includes(p.estado)).length;
-  const salenHoy  = data.filter(p=>{
-    if(!p.fecha_entrega) return false;
-    const hoy = new Date().toISOString().split('T')[0];
-    return p.fecha_entrega === hoy && p.estado !== 'entregado';
-  }).length;
+  const clientesOrdenados = [
+    ...ORDEN_CLIENTES.filter(c => grupos[c]),
+    ...Object.keys(grupos).filter(c => !ORDEN_CLIENTES.includes(c))
+  ];
 
-  // Actualizar stat cards del dashboard
+  // Inicializar grupos expandidos (por defecto todos abiertos)
+  clientesOrdenados.forEach(c => { if (gruposExpandidos[c] === undefined) gruposExpandidos[c] = true; });
+
+  // Generar HTML de la tabla
+  window._proyectosData = data;
+  window._proyectosGrupos = grupos;
+  window._clientesOrdenados = clientesOrdenados;
+  renderTablaProyectos(catLabel, catCss, estLabel, estBadge, areaLabel, grupos, clientesOrdenados);
+
+  // ── Actualizar stats del dashboard ──
+  const total    = data.length;
+  const enProd   = data.filter(p=>p.estado==='en_produccion').length;
+  const retraso  = data.filter(p=>p.estado==='retraso').length;
+  const enEspera = data.filter(p=>['en_espera','pausa'].includes(p.estado)).length;
+  const salenHoy = data.filter(p=>{ if(!p.fecha_entrega) return false; const hoy=new Date().toISOString().split('T')[0]; return p.fecha_entrega===hoy&&p.estado!=='entregado'; }).length;
   const stats = document.querySelectorAll('#view-dashboard .stat-value');
   if(stats[0]) stats[0].textContent = total;
   if(stats[1]) stats[1].textContent = enProd;
@@ -2146,38 +1973,85 @@ async function cargarProyectosDB() {
   // ── Actualizar tabla del dashboard ──
   const dashTbody = document.querySelector('#view-dashboard tbody');
   if (dashTbody) {
-    const activos = data.filter(p=>p.estado !== 'entregado').slice(0, 13);
+    const activos = data.filter(p=>p.estado!=='entregado').slice(0,13);
     dashTbody.innerHTML = activos.map(p => {
-      const equipo = (p.asignaciones||[]).map(a =>
-        `<div class="avatar" style="background:#F0E6DC;color:#8B5E3C;width:24px;height:24px;font-size:10px;">${(a.personas?.nombre||'?').substring(0,2).toUpperCase()}</div>`
-      ).join('');
-      const entrega = p.fecha_entrega ? new Date(p.fecha_entrega+'T12:00:00').toLocaleDateString('es-MX',{day:'numeric',month:'short'}) : '—';
-      const esHoy   = p.fecha_entrega === new Date().toISOString().split('T')[0];
-      const esPasado= p.fecha_entrega && p.fecha_entrega < new Date().toISOString().split('T')[0] && p.estado !== 'entregado';
-      const fechaEl = esHoy
-        ? `<span class="tomorrow">Hoy</span>`
-        : esPasado
-        ? `<span class="urgent">${entrega} ⚠</span>`
-        : `<span class="days-ok">${entrega}</span>`;
-      return `<tr>
-        <td><div style="font-weight:600;font-size:12.5px;">${p.nombre}${p.cliente?' — '+p.cliente:''}</div><div class="mono">${p.codigo||''} ${p.descripcion||''}</div></td>
+      const equipo=(p.asignaciones||[]).map(a=>`<div class="avatar" style="background:#F0E6DC;color:#8B5E3C;width:24px;height:24px;font-size:10px;">${(a.personas?.nombre||'?').substring(0,2).toUpperCase()}</div>`).join('');
+      const entrega=p.fecha_entrega?new Date(p.fecha_entrega+'T12:00:00').toLocaleDateString('es-MX',{day:'numeric',month:'short'}):'—';
+      const esHoy=p.fecha_entrega===new Date().toISOString().split('T')[0];
+      const esPasado=p.fecha_entrega&&p.fecha_entrega<new Date().toISOString().split('T')[0]&&p.estado!=='entregado';
+      const fechaEl=esHoy?`<span class="tomorrow">Hoy</span>`:esPasado?`<span class="urgent">${entrega} ⚠</span>`:`<span class="days-ok">${entrega}</span>`;
+      return `<tr><td><div style="font-weight:600;font-size:12.5px;">${p.nombre}${p.cliente?' — '+p.cliente:''}</div><div class="mono">${p.codigo||''} ${p.descripcion||''}</div></td><td><span class="area-pill area-active">${areaLabel[p.area_actual]||p.area_actual||'—'}</span></td><td><div class="avatar-group">${equipo||'<span style="font-size:11px;color:var(--text-tertiary);">—</span>'}</div></td><td><span class="badge ${estBadge[p.estado]||'badge-esp'}">${p.nota_estado||estLabel[p.estado]||p.estado}</span></td><td>${fechaEl}</td></tr>`;
+    }).join('');
+  }
+
+  // ── Select de proyectos en requisiciones ──
+  const selProy = document.getElementById('req-proyecto');
+  if (selProy) {
+    selProy.innerHTML = '<option value="">Seleccionar proyecto...</option>' +
+      clientesOrdenados.map(c => {
+        const items = grupos[c].filter(p=>p.estado!=='entregado');
+        if(!items.length) return '';
+        return `<optgroup label="${c}">${items.map(p=>`<option value="${p.id}">${p.nombre}</option>`).join('')}</optgroup>`;
+      }).join('');
+  }
+}
+
+function renderTablaProyectos(catLabel, catCss, estLabel, estBadge, areaLabel, grupos, clientesOrdenados) {
+  const tbody = document.getElementById('proyectos-tbody');
+  if (!tbody) return;
+
+  let html = '';
+  clientesOrdenados.forEach(cliente => {
+    const items = grupos[cliente];
+    if (!items || !items.length) return;
+    const expandido = gruposExpandidos[cliente] !== false;
+    const retrasos  = items.filter(p=>p.estado==='retraso').length;
+    const enProd    = items.filter(p=>p.estado==='en_produccion').length;
+
+    // Fila encabezado de cliente (clickeable)
+    html += `<tr class="grupo-header" onclick="toggleGrupo('${cliente.replace(/'/g,"\\'")}')">
+      <td colspan="6" style="padding:8px 14px;background:var(--bg);cursor:pointer;border-bottom:1px solid var(--border-soft);">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span style="font-size:13px;transition:transform .2s;display:inline-block;transform:rotate(${expandido?'90':'0'}deg);" id="arrow-${cliente.replace(/\s/g,'_')}">›</span>
+          <span style="font-size:12px;font-weight:600;color:var(--text);">${cliente}</span>
+          <span style="font-size:11px;color:var(--text-tertiary);">${items.length} ${items.length===1?'pieza':'piezas'}</span>
+          ${retrasos?`<span class="badge badge-ret" style="font-size:10px;padding:1px 7px;">${retrasos} retraso${retrasos>1?'s':''}</span>`:''}
+          ${enProd&&!retrasos?`<span class="badge badge-prog" style="font-size:10px;padding:1px 7px;">${enProd} en producción</span>`:''}
+        </div>
+      </td>
+    </tr>`;
+
+    // Filas de piezas (ocultables)
+    items.forEach(p => {
+      const equipo = (p.asignaciones||[]).map(a=>`<div class="avatar" style="background:#F0E6DC;color:#8B5E3C;width:24px;height:24px;font-size:10px;">${(a.personas?.nombre||'?').substring(0,2).toUpperCase()}</div>`).join('');
+      const entrega = p.fecha_entrega?new Date(p.fecha_entrega+'T12:00:00').toLocaleDateString('es-MX',{day:'numeric',month:'short'}):'—';
+      const esHoy = p.fecha_entrega===new Date().toISOString().split('T')[0];
+      const esPasado = p.fecha_entrega&&p.fecha_entrega<new Date().toISOString().split('T')[0]&&p.estado!=='entregado';
+      const fechaEl = esHoy?`<span class="tomorrow">Hoy</span>`:esPasado?`<span class="urgent">${entrega} ⚠</span>`:`<span class="days-ok">${entrega}</span>`;
+      html += `<tr class="grupo-item grupo-${cliente.replace(/\s/g,'_').replace(/[^a-zA-Z0-9_]/g,'')}" data-cat="${p.categoria}" data-estado="${p.estado}" style="display:${expandido?'':'none'};border-bottom:1px solid var(--border-soft);">
+        <td style="padding:8px 14px 8px 32px;"><div style="font-weight:500;font-size:12.5px;">${p.nombre}</div><div class="mono">${p.codigo||''} ${p.descripcion||''}</div></td>
+        <td><span class="cat-badge ${catCss[p.categoria]||''}">${catLabel[p.categoria]||p.categoria}</span></td>
         <td><span class="area-pill area-active">${areaLabel[p.area_actual]||p.area_actual||'—'}</span></td>
         <td><div class="avatar-group">${equipo||'<span style="font-size:11px;color:var(--text-tertiary);">—</span>'}</div></td>
         <td><span class="badge ${estBadge[p.estado]||'badge-esp'}">${p.nota_estado||estLabel[p.estado]||p.estado}</span></td>
         <td>${fechaEl}</td>
       </tr>`;
-    }).join('');
-  }
+    });
+  });
 
-  // ── Actualizar select de proyectos en requisiciones ──
-  const selProy = document.getElementById('req-proyecto');
-  if (selProy) {
-    selProy.innerHTML = '<option value="">Seleccionar proyecto...</option>' +
-      data.filter(p=>p.estado!=='entregado').map(p =>
-        `<option value="${p.id}">${p.nombre}${p.cliente?' — '+p.cliente:''}</option>`
-      ).join('');
-  }
+  tbody.innerHTML = html;
 }
+
+window.toggleGrupo = function(cliente) {
+  gruposExpandidos[cliente] = !gruposExpandidos[cliente];
+  const expandido = gruposExpandidos[cliente];
+  const key = cliente.replace(/\s/g,'_').replace(/[^a-zA-Z0-9_]/g,'');
+  document.querySelectorAll(`.grupo-${key}`).forEach(row => {
+    row.style.display = expandido ? '' : 'none';
+  });
+  const arrow = document.getElementById('arrow-'+cliente.replace(/\s/g,'_'));
+  if (arrow) arrow.style.transform = `rotate(${expandido?90:0}deg)`;
+};
 
 // ═══════════════════════════════════════════════
 //  REQUISICIONES — guardar y leer desde Supabase
